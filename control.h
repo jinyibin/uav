@@ -36,7 +36,7 @@
 
 /* frame from gound  */
 #define CTRL_FRAME_TYPE_HELI_CONFIG      0x38        // heli configure including heli type,oil volume etc.
-#define CTRL_FRAME_TYPE_WAYPPOINT_MODIFY 0x8B        // modify way point
+#define CTRL_FRAME_TYPE_WAYPOINT_MODIFY  0x8B        // modify way point
 #define CTRL_FRAME_TYPE_FLY_PARA1        0x33        // set flying parameter1
 #define CTRL_FRAME_TYPE_FLY_PARA2        0x3E        // set flying parameter2
 #define CTRL_FRAME_TYPE_FIRM_UPDATE      0xFF        // update firmware
@@ -53,7 +53,7 @@
 #define CTRL_FRAME_TYPE_CMD_CONFIRM      0x80
 #define CTRL_FRAME_TYPE_STICK_DATA       0xD6        // data from joystick
 #define CTRL_FRAME_TYPE_LINK_TEST        0x69
-#define CTRL_FRAME_TYPE_EXPORT_DATA      0x00
+#define CTRL_FRAME_TYPE_EXPORT_DATA      0x86
 /* frame to the ground   */
 #define CTRL_FRAME_TYPE_FLY_STATUS       0x55
 #define CTRL_FRAME_TYPE_ERROR            0x41
@@ -369,6 +369,7 @@ void control_cmd_confirm();
 void control_cmd_response_recv(uint8 *data,uint16 data_size);
 void control_cmd_response_exe(uint8 data);
 void send_version();
+void data_export();
 
 
 

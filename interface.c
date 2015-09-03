@@ -19,7 +19,11 @@ void get_flyling_line_point(int forward)
 		if (get_flying_status() <= AIRCRAFT_TAKEOFF) {
 			memcpy(&gspoint, &wp->waypoint, sizeof(gspoint));
 			memcpy(&gepoint, &wp->waypoint, sizeof(gepoint));
-		} else if (wp == get_waypoint_tail() || get_flying_status() == AIRCRAFT_LANDING){
+		} else if (wp == get_waypoint_tail() || get_flying_status() == AIRCRAFT_RETURN){
+			memcpy(&gspoint, &wp->waypoint, sizeof(gspoint));
+			wp = get_waypoint_head();
+			memcpy(&gepoint, &wp->waypoint, sizeof(gepoint));
+		} else if (get_flying_status() == AIRCRAFT_LANDING){
 			memcpy(&gspoint, &wp->waypoint, sizeof(gspoint));
 			memcpy(&gepoint, &wp->waypoint, sizeof(gepoint));
 		} else {

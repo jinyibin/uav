@@ -82,7 +82,7 @@ int control_data_parse(unsigned char *buf, frame_info *frame_info,frame_wait_con
 	       (frame_type==CTRL_FRAME_TYPE_FLY_PARA1)   ||
 	       (frame_type==CTRL_FRAME_TYPE_FLY_PARA2)   ||
 	       (frame_type==CTRL_FRAME_TYPE_HELI_CONFIG) ||
-	       (frame_type==CTRL_FRAME_TYPE_WAYPPOINT_MODIFY)||
+	       (frame_type==CTRL_FRAME_TYPE_WAYPOINT_MODIFY)||
 	       (frame_type==CTRL_FRAME_TYPE_WAYPOINT_INIT)    ||
 	       (frame_type==CTRL_FRAME_TYPE_FIRM_UPDATE)
 	       ){
@@ -101,6 +101,7 @@ int control_data_parse(unsigned char *buf, frame_info *frame_info,frame_wait_con
 		}else if(frame_type==CTRL_FRAME_TYPE_LINK_TEST){
 			// do not answer link test data ,update it directly ,because it's periodical
             link_test(buf);
+            set_flying_status(SYS_PREPARE_STEERING_TEST);
 		}else if(frame_type==CTRL_FRAME_TYPE_VERSION_READ){
             send_version();
 		}else
@@ -144,7 +145,7 @@ int control_data_parse(unsigned char *buf, frame_info *frame_info,frame_wait_con
 		        	    set_flying_status(AIRCRAFT_LANDING);
                        break;
 		        case CTRL_FRAME_TYPE_EXPORT_DATA:
-		        	 	//data_export();
+		        	 	data_export();
 		        	    break;
 		        case CTRL_FRAME_TYPE_FLY_PARA1:
 		        	    update_control_parameter_remote1(frame_wait_confirm->data);
@@ -155,7 +156,7 @@ int control_data_parse(unsigned char *buf, frame_info *frame_info,frame_wait_con
 		        case CTRL_FRAME_TYPE_HELI_CONFIG:
 		        	    set_aircaft_preparing_status(frame_wait_confirm->data);
 		        	    break;
-		        case CTRL_FRAME_TYPE_WAYPPOINT_MODIFY:
+		        case CTRL_FRAME_TYPE_WAYPOINT_MODIFY:
 		        	    inflight_waypoint_modify(frame_wait_confirm);
 		        	 break;
 		        case CTRL_FRAME_TYPE_WAYPOINT_INIT:

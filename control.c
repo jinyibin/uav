@@ -34,6 +34,7 @@ int get_system_status()
 static int waypoint_list_add(uint8 *waypoint)
 {
 	waypoint_list_s *wp_list = NULL;
+	waypoint_list_s *wp_list_tail = waypoint_list_tail;
 
 	wp_list = malloc(sizeof(waypoint_list_s));
 	if (wp_list == NULL) {
@@ -53,11 +54,11 @@ static int waypoint_list_add(uint8 *waypoint)
 		wp_list->prev = NULL;
 		wp_list->next = NULL;
 	} else {
+		wp_list_tail->next = wp_list;
 		wp_list->prev = waypoint_list_tail;
 		wp_list->next = NULL;
 		waypoint_list_tail = wp_list;
 	}
-
 	waypoint_info.received_num++;
 
 	return 0;
@@ -91,10 +92,16 @@ int waypoint_delete (uint8 *waypoint, int no)
 	if (wp->next)
 		wp->next->prev = wp->prev;
 	free(wp);
-	wp = NULL;
+	wp = waypoint_list_head;
 
 	waypoint_info.received_num --;
 	waypoint_info.total_num --;
+	//reassign id no
+	for(i=0;i<waypoint_info.total_num;i++){
+         wp->waypoint.id = i;
+         wp = wp->next;
+	}
+
 	return 0;
 }
 int waypoint_insert (uint8 *waypoint, int no)
@@ -123,8 +130,15 @@ int waypoint_insert (uint8 *waypoint, int no)
 	curr->prev = prev;
 	prev->next = curr;
 
+
+	wp = waypoint_list_head;
 	waypoint_info.received_num ++;
 	waypoint_info.total_num ++;
+	//reassign id no
+	for(i=0;i<waypoint_info.total_num;i++){
+         wp->waypoint.id = i;
+         wp = wp->next;
+	}
 	return 0;
 }
 
@@ -180,11 +194,11 @@ int inflight_waypoint_modify(frame_wait_confirm *frame_wait_confirm)
     int ret = -1;
     waypoint_id = frame_wait_confirm->data[CTRL_FRAME_MASK_WP_ID+1] << 8| frame_wait_confirm->data[CTRL_FRAME_MASK_WP_ID];
  	if (frame_wait_confirm->data[0] == WAYPOINT_INSERT)
- 		ret=waypoint_insert(frame_wait_confirm->data + CTRL_FRAME_MASK_WP_PARA, waypoint_id);
+ 		ret=waypoint_insert(frame_wait_confirm->data + CTRL_FRAME_MASK_WP_ID, waypoint_id);
  	else if (frame_wait_confirm->data[0] == WAYPOINT_MODIFY)
- 		ret=waypoint_modify(frame_wait_confirm->data + CTRL_FRAME_MASK_WP_PARA, waypoint_id);
+ 		ret=waypoint_modify(frame_wait_confirm->data + CTRL_FRAME_MASK_WP_ID, waypoint_id);
  	else if (frame_wait_confirm->data[0] == WAYPOINT_DELETE)
- 		ret=waypoint_delete(frame_wait_confirm->data + CTRL_FRAME_MASK_WP_PARA, waypoint_id);
+ 		ret=waypoint_delete(frame_wait_confirm->data + CTRL_FRAME_MASK_WP_ID, waypoint_id);
 
  	return ret;
 }
@@ -197,9 +211,9 @@ void waypoint_init(frame_wait_confirm *frame_wait_confirm)
 	int waypoint_total_num;
 	uint8 *waypoint;
     // extract way point number of this frame
-	waypoint_num_this_frame= frame_wait_confirm->data[CTRL_FRAME_MASK_WP_NUM];
+	waypoint_num_this_frame= frame_wait_confirm->data[CTRL_FRAME_MASK_WP_NUM+2];
 
-	waypoint_total_num = frame_wait_confirm->data[CTRL_FRAME_MASK_WP_NUM+2] << 8 | frame_wait_confirm->data[CTRL_FRAME_MASK_WP_NUM+1];
+	waypoint_total_num = frame_wait_confirm->data[CTRL_FRAME_MASK_WP_NUM+1] << 8 | frame_wait_confirm->data[CTRL_FRAME_MASK_WP_NUM];
 	// if this is the first frame of way point packet, free the way point list in the memory
 	if(frame_wait_confirm->frame_id == 1){
 	   waypoint_list_clear();
@@ -214,6 +228,7 @@ void waypoint_init(frame_wait_confirm *frame_wait_confirm)
 		print_err("way point number err\n");
 		return;
 	}
+
 	for (i = 0; i < waypoint_num_this_frame; i++) {
 		waypoint = frame_wait_confirm->data + 3 + i* WAYPOINT_INFO_LEN;
 		waypoint_list_add(waypoint);
@@ -228,8 +243,9 @@ void waypoint_init(frame_wait_confirm *frame_wait_confirm)
 					return;
 		}
 
+
 	}
-	waypoint_list_current = waypoint_list_head;
+    waypoint_list_current = waypoint_list_head;
 }
 
 void waypoint_return(unsigned char *buf, int buf_size)
@@ -534,6 +550,20 @@ void send_version()
 	buf[30] = CTRL_FRAME_END;
 	control_cmd_send(buf, 31);
 
+}
+
+void data_export()
+{
+	waypoint_list_s *wp = waypoint_list_head;
+	if(wp==NULL){
+		printf("no way point data\n");
+		return;
+	}
+
+	do{
+       printf("%2d,%8f,%lf,%lf,%8f,%x\n",wp->waypoint.id,wp->waypoint.v,wp->waypoint.lon,wp->waypoint.lat,wp->waypoint.h,wp->waypoint.task);
+	   wp = wp->next;
+	}while(wp!=NULL);
 }
 
 
