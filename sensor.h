@@ -5,7 +5,7 @@
 
 #define SERIAL_BUF_SIZE 1024
 
-#define GPS_SENSOR_COM "/dev/ttyLP2"
+#define GPS_SENSOR_COM "/dev/ttyLP1"
 #define CONTROL_COM "/dev/ttyLP3"
 #define HIGHT_SENOR_COM "/dev/ttyS3"
 

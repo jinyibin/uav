@@ -61,7 +61,7 @@ static pthread_t execute_pid;
 static int running = 1;
 static pthread_cond_t timer_cond;
 #define TIMER_CYCLE 20000 //20MS
-
+/*
 static void *auto_flying_execute()
 {
 	struct timeval tpStart,tpEnd;
@@ -77,7 +77,7 @@ static void *auto_flying_execute()
 	while(running) {
 		fa=get_flying_attitude();
 	    gettimeofday(&tpStart, NULL);
-	    /*
+
 		current_ts = tpStart.tv_sec * 1000000 + tpStart.tv_usec;
 		if ((current_ts - timer_ts) < TIMER_CYCLE) {
 			ts.tv_nsec = (tpStart.tv_usec + (current_ts - timer_ts)) * 1000;
@@ -91,7 +91,7 @@ static void *auto_flying_execute()
 			print_err("Thread cost too much time\n");
 		}
 		timer_ts += TIMER_CYCLE;
-*/
+
 	    print_debug("frame %4d  frame time:%d systime:%f,%d\n",i++,fa->g_time,tpStart.tv_sec*1000+tpStart.tv_usec*0.001,sizeof(flying_attitude_s));
 		do {
 		        gettimeofday(&tpEnd, NULL);
@@ -99,7 +99,7 @@ static void *auto_flying_execute()
 		} while(timeUse < 4);
 	}
 }
-/*
+*/
 static void *auto_flying_execute()
 {
 	struct timeval tpStart,tpEnd;
@@ -108,28 +108,32 @@ static void *auto_flying_execute()
 	int i=0;
 	uint64 current_ts, timer_ts;
 
-	gettimeofday(&tpStart, NULL);
-	timer_ts = tpStart.tv_sec * 1000000 + tpStart.tv_usec;
+
 
 	while(running) {
+		gettimeofday(&tpStart, NULL);
+		timer_ts = tpStart.tv_sec * 1000000 + tpStart.tv_usec;
 		fa=get_flying_attitude();
-	    gettimeofday(&tpStart, NULL);
-		current_ts = tpStart.tv_sec * 1000000 + tpStart.tv_usec;
-		if ((current_ts - timer_ts) < TIMER_CYCLE) {
-			usleep(current_ts - timer_ts);
-		} else {
-			print_err("Thread cost too much time\n");
-		}
-		timer_ts += TIMER_CYCLE;
 
-	    print_debug("frame %4d  frame time:%d systime:%f,%d\n",i++,fa->g_time,tpStart.tv_sec*1000+tpStart.tv_usec*0.001,sizeof(flying_attitude_s));
+	    print_debug("frame %4d  frame time:%d systime:%f,%d\n",i++,fa->g_time,timer_ts*0.001,sizeof(flying_attitude_s));
 		do {
 		        gettimeofday(&tpEnd, NULL);
 		        timeUse = 1000 * (tpEnd.tv_sec - tpStart.tv_sec) + 0.001 * (tpEnd.tv_usec - tpStart.tv_usec);
 		} while(timeUse < 3);
+
+	    gettimeofday(&tpStart, NULL);
+		current_ts = tpStart.tv_sec * 1000000 + tpStart.tv_usec;
+		if ((current_ts - timer_ts) < TIMER_CYCLE) {
+			usleep(TIMER_CYCLE-(current_ts -timer_ts));
+		} else {
+			print_err("Thread cost too much time\n");
+		}
+		//timer_ts += TIMER_CYCLE;
+
+
 	}
 }
-*/
+
 
 void auto_flying_start()
 {

@@ -67,6 +67,7 @@ int control_data_parse(unsigned char *buf, frame_info *frame_info,frame_wait_con
 
 
 	unsigned char frame_type = buf[10];
+	int i=0;
 
 	if(frame_type!=CTRL_FRAME_TYPE_CMD_CONFIRM ){
 		//if the frame is not a confirm command,store the data and send out answer command ,except joystick data
@@ -98,10 +99,11 @@ int control_data_parse(unsigned char *buf, frame_info *frame_info,frame_wait_con
 		}else if(frame_type==CTRL_FRAME_TYPE_STICK_DATA){
 			// do not answer joystick data ,update it directly ,because it's periodical
 			update_control_data(buf+CTRL_FRAME_MASK_DATA);
+			print_debug("joystick frame %d\n",i++);
 		}else if(frame_type==CTRL_FRAME_TYPE_LINK_TEST){
 			// do not answer link test data ,update it directly ,because it's periodical
             link_test(buf);
-            set_flying_status(SYS_PREPARE_STEERING_TEST);
+            set_system_status(SYS_PREPARE_STEERING_TEST);
 		}else if(frame_type==CTRL_FRAME_TYPE_VERSION_READ){
             send_version();
 		}else
@@ -383,7 +385,7 @@ unsigned int serial_data_recv_ctrl(frame_info *frame_info ,unsigned char *buf)
             	     //if(frame_crc==crc_checksum16(buf, frame_info->frame_size-3)){
             	     if(1){
             		    // we have a valid CRC
-            	    	 print_debug("ctrl :valid crc\n");
+            	    	 //print_debug("ctrl :valid crc\n");
 
             		     return frame_info->frame_size;
             	     }else{
@@ -471,7 +473,7 @@ static void *sensor_data_collect()
 				if (FD_ISSET(gps_fd, &rfds)) {
 					data_len=serial_data_recv_gps(&frame_info_gps,buf_gps);
                     if(data_len > 0){
-                        print_debug("%4d ,frame time: %d,length : %d\n",i++, *(unsigned int *)(buf_gps+41),data_len);
+                        //print_debug("%4d ,frame time: %d,length : %d\n",i++, *(unsigned int *)(buf_gps+41),data_len);
                     	gps_data_parse(buf_gps, &frame_info_gps);
                     	frame_info_gps.frame_size=0;
                     	frame_info_gps.bytes_received -= data_len;
@@ -482,7 +484,7 @@ static void *sensor_data_collect()
 
 					data_len = serial_data_recv_ctrl(&frame_info_ctrl,buf_ctrl);
 					if(data_len > 0){
-						print_debug("ctrl %d\n",m++);
+
 					    control_data_parse(buf_ctrl,&frame_info_ctrl,&frame_wait_confirm);
 					   frame_info_ctrl.frame_size=0;
 					   frame_info_ctrl.bytes_received -= data_len;
