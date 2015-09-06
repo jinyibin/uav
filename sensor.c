@@ -475,6 +475,9 @@ static void *sensor_data_collect()
                     if(data_len > 0){
                         //print_debug("%4d ,frame time: %d,length : %d\n",i++, *(unsigned int *)(buf_gps+41),data_len);
                     	gps_data_parse(buf_gps, &frame_info_gps);
+                    	if(frame_info_gps.bytes_received > frame_info_gps.frame_size){
+                    	     memmove(buf_gps,buf_gps+frame_info_gps.frame_size,frame_info_gps.bytes_received-frame_info_gps.frame_size);
+                    	}
                     	frame_info_gps.frame_size=0;
                     	frame_info_gps.bytes_received -= data_len;
 
@@ -486,8 +489,11 @@ static void *sensor_data_collect()
 					if(data_len > 0){
 
 					    control_data_parse(buf_ctrl,&frame_info_ctrl,&frame_wait_confirm);
-					   frame_info_ctrl.frame_size=0;
-					   frame_info_ctrl.bytes_received -= data_len;
+                     	if(frame_info_ctrl.bytes_received > frame_info_ctrl.frame_size){
+					        memmove(buf_ctrl,buf_ctrl+frame_info_ctrl.frame_size,frame_info_ctrl.bytes_received-frame_info_ctrl.frame_size);
+                     	}
+					    frame_info_ctrl.frame_size=0;
+					    frame_info_ctrl.bytes_received -= data_len;
 					}
 				}
 		} else {
