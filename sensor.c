@@ -85,6 +85,8 @@ int control_data_parse(unsigned char *buf, frame_info *frame_info,frame_wait_con
 	       (frame_type==CTRL_FRAME_TYPE_HELI_CONFIG) ||
 	       (frame_type==CTRL_FRAME_TYPE_WAYPOINT_MODIFY)||
 	       (frame_type==CTRL_FRAME_TYPE_WAYPOINT_INIT)    ||
+	       (frame_type==CTRL_FRAME_TYPE_GROUND_OK)    ||
+	       (frame_type==CTRL_FRAME_TYPE_MANUAL_MODE)  ||
 	       (frame_type==CTRL_FRAME_TYPE_FIRM_UPDATE)
 	       ){
               //handle the control command
@@ -117,8 +119,6 @@ int control_data_parse(unsigned char *buf, frame_info *frame_info,frame_wait_con
 	        switch (frame_wait_confirm->type) {
 		        case CTRL_FRAME_TYPE_SERVO_TEST:
 		        	 	steering_test();
-		        	 	set_system_status(SYS_PREPARE_TAKEOFF);
-		        	 	set_flying_status(AIRCRAFT_READY);
 		        	    break;
 		        case CTRL_FRAME_TYPE_TAKEOFF:
 		        	 	if(get_flying_status() == AIRCRAFT_READY) {
@@ -146,6 +146,13 @@ int control_data_parse(unsigned char *buf, frame_info *frame_info,frame_wait_con
 		        case CTRL_FRAME_TYPE_LAND:
 		        	    set_flying_status(AIRCRAFT_LANDING);
                        break;
+		        case CTRL_FRAME_TYPE_MANUAL_MODE:
+		        		set_flying_status(AIRCRAFT_MANUAL_MODE);
+		                break;
+		        case CTRL_FRAME_TYPE_GROUND_OK:
+		        		set_system_status(SYS_PREPARE_TAKEOFF);
+		        		set_flying_status(AIRCRAFT_READY);
+		                break;
 		        case CTRL_FRAME_TYPE_EXPORT_DATA:
 		        	 	data_export();
 		        	    break;

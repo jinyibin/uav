@@ -43,11 +43,13 @@ static int waypoint_list_add(uint8 *waypoint)
 	}
 	//memcpy(&(wp_list->waypoint), waypoint, sizeof(waypoint_s));
 	wp_list->waypoint.id = *(uint16*)(waypoint);
-	wp_list->waypoint.v = *(float*)(waypoint+2);
-	wp_list->waypoint.lon = *(double*)(waypoint+6);
-	wp_list->waypoint.lat = *(double*)(waypoint+14);
-	wp_list->waypoint.h = *(float*)(waypoint+22);
-	wp_list->waypoint.task = *(waypoint+26);
+	wp_list->waypoint.task = *(waypoint+2);
+	wp_list->waypoint.task_para = *(waypoint+3);
+	wp_list->waypoint.v = *(float*)(waypoint+4);
+	wp_list->waypoint.lon = *(double*)(waypoint+8);
+	wp_list->waypoint.lat = *(double*)(waypoint+16);
+	wp_list->waypoint.h = *(float*)(waypoint+24);
+
 
 	if (waypoint_list_head == NULL) {
 		waypoint_list_head = waypoint_list_tail = wp_list;
@@ -112,11 +114,12 @@ int waypoint_insert (uint8 *waypoint, int no)
 	waypoint_list_s *curr = malloc(sizeof(waypoint_list_s));
 	//memcpy(&curr->waypoint, waypoint, sizeof(waypoint_s));;
 	curr->waypoint.id = *(uint16*)(waypoint);
-	curr->waypoint.v = *(float*)(waypoint+2);
-	curr->waypoint.lon = *(double*)(waypoint+6);
-	curr->waypoint.lat = *(double*)(waypoint+14);
-	curr->waypoint.h = *(float*)(waypoint+22);
-	curr->waypoint.task = *(waypoint+26);
+	curr->waypoint.task = *(waypoint+2);
+	curr->waypoint.task_para = *(waypoint+3);
+	curr->waypoint.v = *(float*)(waypoint+4);
+	curr->waypoint.lon = *(double*)(waypoint+8);
+	curr->waypoint.lat = *(double*)(waypoint+16);
+	curr->waypoint.h = *(float*)(waypoint+24);
 	for(i= 0; i < no; i++) {
 		if (wp == NULL){
 			print_err("waypoint list node is NULL, insert failed\n");
@@ -155,11 +158,12 @@ int waypoint_modify (uint8 *waypoint, int no)
 	}
 	//memcpy(&wp->waypoint, waypoint, sizeof(waypoint_s));
 	wp->waypoint.id = *(uint16*)(waypoint);
-	wp->waypoint.v = *(float*)(waypoint+2);
-	wp->waypoint.lon = *(double*)(waypoint+6);
-	wp->waypoint.lat = *(double*)(waypoint+14);
-	wp->waypoint.h = *(float*)(waypoint+22);
-	wp->waypoint.task = *(waypoint+26);
+	wp->waypoint.task = *(waypoint+2);
+	wp->waypoint.task_para = *(waypoint+3);
+	wp->waypoint.v = *(float*)(waypoint+4);
+	wp->waypoint.lon = *(double*)(waypoint+8);
+	wp->waypoint.lat = *(double*)(waypoint+16);
+	wp->waypoint.h = *(float*)(waypoint+24);
 	return 0;
 }
 waypoint_list_s *get_waypoint_head()
@@ -230,7 +234,7 @@ void waypoint_init(frame_wait_confirm *frame_wait_confirm)
 	}
 
 	for (i = 0; i < waypoint_num_this_frame; i++) {
-		waypoint = frame_wait_confirm->data + 3 + i* WAYPOINT_INFO_LEN;
+		waypoint = frame_wait_confirm->data + 4 + i* WAYPOINT_INFO_LEN;
 		waypoint_list_add(waypoint);
 	}
 
@@ -561,7 +565,7 @@ void data_export()
 	}
 
 	do{
-       printf("%2d,%8f,%lf,%lf,%8f,%x\n",wp->waypoint.id,wp->waypoint.v,wp->waypoint.lon,wp->waypoint.lat,wp->waypoint.h,wp->waypoint.task);
+       printf("%2d,%8f,%lf,%lf,%8f,%x,%x\n",wp->waypoint.id,wp->waypoint.v,wp->waypoint.lon,wp->waypoint.lat,wp->waypoint.h,wp->waypoint.task,wp->waypoint.task_para);
 	   wp = wp->next;
 	}while(wp!=NULL);
 }

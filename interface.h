@@ -33,20 +33,25 @@ struct wstate {
 
 
 struct spoint {
+
 	uint16 id;
+	unsigned char task;
+	unsigned char task_para;
 	float v;
 	double lon;
 	double lat;
 	float h;
-	char task;
+
 };
 struct epoint {
+
 	uint16 id;
+	unsigned char task;
+	unsigned char task_para;
 	float v;
 	double lon;
 	double lat;
 	float h;
-	char task;
 };
 
 struct pwm {

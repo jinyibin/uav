@@ -14,6 +14,7 @@
 #define AIRCRAFT_HOVERING 0x80
 #define AIRCRAFT_RETURN 0x100
 #define AIRCRAFT_OBS_AVOIDING 0x1000
+#define AIRCRAFT_MANUAL_MODE 0x2000
 #define AIRCRAFT_FAULT 0xFF
 
 int flying_attitude_sensor_is_active();
