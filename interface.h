@@ -76,7 +76,7 @@ struct sstate gsfstate; //setting status
 struct wstate gwstate; //work status
 
 static struct spoint gspoint; //start flying point
-static struct epoint gepoint; //end flying point
+struct epoint gepoint; //end flying point
 
 struct pwm ppwm; //PWM output
 

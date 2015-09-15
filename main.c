@@ -15,6 +15,7 @@
 int main( int argc,char *argv[])
 {
 	int ret = -1;
+	uint32 counter=0;
 	struct timeval tpStart,tpEnd;
 	uint64 start_time, stop_time;
 	while (ret < 0 ){
@@ -33,11 +34,19 @@ int main( int argc,char *argv[])
 	auto_flying_start();
 	usleep(10000);
 	while (1) {
-
+        counter++;
 		gettimeofday(&tpStart, NULL);
 		start_time = tpStart.tv_sec * 1000000 + tpStart.tv_usec;
 
 		flying_status_return();
+		//save data every 1 minute
+		if(counter==3000){
+			counter=0;
+			fclose(fp_fly_status);
+		    if((fp_fly_status=fopen("fly_status","ab+"))==NULL){
+		      printf("reopen file failed :fly_status\n");
+		    }
+		}
 
 	    gettimeofday(&tpStart, NULL);
 		stop_time = tpStart.tv_sec * 1000000 + tpStart.tv_usec;

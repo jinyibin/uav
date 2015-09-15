@@ -23,6 +23,7 @@ typedef unsigned long long uint64;
 /*  err tag */
 #define INVALID_CMD 30
 #define CMD_TYPE_MISMATCH 31
+#define UNSUPPORTED_CMD 32
 #define SERIAL_NO_DATA 40
 
 #define SPI_OPEN_FAILED    -2

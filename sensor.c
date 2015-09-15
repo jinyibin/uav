@@ -11,13 +11,14 @@
 #include "serial.h"
 #include "status.h"
 #include "sensor.h"
+#include "fpga.h"
 
 static int gps_fd = -1;
 //static int high_fd = -1;
 static int control_fd = -1;
 static int running = 0;
 
-static uint16 uav_ctrl_id=0x01;
+//static uint16 uav_ctrl_id=0x01;
 #define MAX(a,b) (a>b?a:b)
 
 static pthread_t recv_pid;
@@ -68,6 +69,7 @@ int control_data_parse(unsigned char *buf, frame_info *frame_info,frame_wait_con
 
 	unsigned char frame_type = buf[10];
 	int i=0;
+	char cmd_exe_err=0;
 
 	if(frame_type!=CTRL_FRAME_TYPE_CMD_CONFIRM ){
 		//if the frame is not a confirm command,store the data and send out answer command ,except joystick data
@@ -118,69 +120,156 @@ int control_data_parse(unsigned char *buf, frame_info *frame_info,frame_wait_con
 			 */
 	        switch (frame_wait_confirm->type) {
 		        case CTRL_FRAME_TYPE_SERVO_TEST:
-		        	 	steering_test();
+        	 	    if(get_flying_status() == AIRCRAFT_PREPARING)
+        	 		    steering_test();
+        	 	    else {
+        	 		    print_err("can not test rotar now %d\n", get_flying_status());
+        	 		    cmd_exe_err = INVALID_CMD;
+        	 	    }
 		        	    break;
 		        case CTRL_FRAME_TYPE_TAKEOFF:
-		        	 	if(get_flying_status() == AIRCRAFT_READY) {
+		        	 	if(get_flying_status() == AIRCRAFT_READY)
 		        	 		set_flying_status(AIRCRAFT_TAKEOFF);
-		        	 	}
 		        	 	else {
 		        	 		print_err("aircarft takeoff is not ready %d\n", get_flying_status());
+	        	 		    cmd_exe_err = INVALID_CMD;
 		        	 	}
 		        	    break;
 		        case CTRL_FRAME_TYPE_REMOTE_CTRL1:
-		        	 	set_flying_status(AIRCRAFT_REMOTE1);
+	        	 	if(get_flying_status() & REMOTE1_VALID)
+	        	 		set_flying_status(AIRCRAFT_REMOTE1);
+	        	 	else {
+	        	 		print_err("aircarft can not switch to remote1 now %d\n", get_flying_status());
+        	 		    cmd_exe_err = INVALID_CMD;
+	        	 	}
    		        	    break;
 		        case CTRL_FRAME_TYPE_REMOTE_CTRL2:
-		        	 	set_flying_status(AIRCRAFT_REMOTE2);
+	        	 	if(get_flying_status() & REMOTE2_VALID)
+	        	 		set_flying_status(AIRCRAFT_REMOTE2);
+	        	 	else {
+                        print_err("aircarft can not switch to remote2 now %d\n", get_flying_status());
+        	 		    cmd_exe_err = INVALID_CMD;
+	        	 	}
 		        	    break;
 		        case CTRL_FRAME_TYPE_HOVER:
-		        	 	set_flying_status(AIRCRAFT_HOVERING);
+	        	 	if(get_flying_status() & HOVER_VALID)
+	        	 		set_flying_status(AIRCRAFT_HOVERING);
+	        	 	else {
+                        print_err("aircarft can not switch to hover now %d\n", get_flying_status());
+        	 		    cmd_exe_err = INVALID_CMD;
+	        	 	}
 		                break;
 		        case CTRL_FRAME_TYPE_FLYING:
-		        	 	set_flying_status(AIRCRAFT_FLYING);
+	        	 	if(get_flying_status() & FLYING_VALID)
+	        	 		set_flying_status(AIRCRAFT_FLYING);
+	        	 	else {
+	        	 		print_err("aircarft can not switch to flying now %d\n", get_flying_status());
+        	 		    cmd_exe_err = INVALID_CMD;
+	        	 	}
 		        	 break;
 		        case CTRL_FRAME_TYPE_RETURN:
-		        	 	set_flying_status(AIRCRAFT_RETURN);
+	        	 	if(get_flying_status() & RETURN_VALID)
+	        	 		set_flying_status(AIRCRAFT_RETURN);
+	        	 	else {
+	        	 		print_err("aircarft can not switch to return now %d\n", get_flying_status());
+        	 		    cmd_exe_err = INVALID_CMD;
+	        	 	}
 		        	    break;
 		        case CTRL_FRAME_TYPE_LAND:
-		        	    set_flying_status(AIRCRAFT_LANDING);
+	        	 	if(get_flying_status() & LAND_VALID)
+	        	 		set_flying_status(AIRCRAFT_LANDING);
+	        	 	else {
+                 		print_err("aircarft can not switch to land now %d\n", get_flying_status());
+        	 		    cmd_exe_err = INVALID_CMD;
+	        	 	}
                        break;
 		        case CTRL_FRAME_TYPE_MANUAL_MODE:
-		        		set_flying_status(AIRCRAFT_MANUAL_MODE);
-		                break;
+        	 	    if(get_flying_status() == AIRCRAFT_PREPARING){
+        	 		    set_flying_status(AIRCRAFT_MANUAL_MODE);
+        	 		    //switch pwm output to RC input
+        	 		    cmd_exe_err=set_control_register(CTRL_REG_MASK_MANUAL);
+
+        	 	    }else {
+       	 		         print_err("can not switch to manual mode now %d\n", get_flying_status());
+             	 		    cmd_exe_err = INVALID_CMD;
+        	 	    }
+        	 		         break;
 		        case CTRL_FRAME_TYPE_GROUND_OK:
-		        		set_system_status(SYS_PREPARE_TAKEOFF);
+        	 	    if(get_flying_status() == AIRCRAFT_PREPARING) {
+        	 		    set_system_status(SYS_PREPARE_TAKEOFF);
 		        		set_flying_status(AIRCRAFT_READY);
+        	 	    } else {
+        	 		    print_err("can not export data now %d\n", get_flying_status());
+             	 		cmd_exe_err = INVALID_CMD;
+        	 	    }
 		                break;
 		        case CTRL_FRAME_TYPE_EXPORT_DATA:
-		        	 	data_export();
+	        	 	    if(get_flying_status() == AIRCRAFT_PREPARING)
+	        	 		    data_export();
+	        	 	    else {
+        	 		         print_err("can not export data now %d\n", get_flying_status());
+             	 		    cmd_exe_err = INVALID_CMD;
+	        	 	    }
 		        	    break;
 		        case CTRL_FRAME_TYPE_FLY_PARA1:
-		        	    update_control_parameter_remote1(frame_wait_confirm->data);
+	        	 	    if(get_flying_status() == AIRCRAFT_PREPARING)
+	        	 		     update_control_parameter_remote1(frame_wait_confirm->data);
+	        	 	    else {
+        	 		        print_err("can not set fly para now %d\n", get_flying_status());
+            	 		    cmd_exe_err = INVALID_CMD;
+	        	 	    }
 		            	 break;
 		        case CTRL_FRAME_TYPE_FLY_PARA2:
-		        		update_control_parameter_remote2(frame_wait_confirm->data);
+        	 	    if(get_flying_status() == AIRCRAFT_PREPARING)
+        	 		     update_control_parameter_remote2(frame_wait_confirm->data);
+        	 	    else {
+       	 		        print_err("can not set fly para now %d\n", get_flying_status());
+        	 		    cmd_exe_err = INVALID_CMD;
+        	 	    }
 		        	    break;
 		        case CTRL_FRAME_TYPE_HELI_CONFIG:
-		        	    set_aircaft_preparing_status(frame_wait_confirm->data);
+        	 	    if(get_flying_status() == AIRCRAFT_PREPARING)
+        	 		     set_aircaft_preparing_status(frame_wait_confirm->data);
+        	 	    else {
+        	 		        print_err("can not configure heli now %d\n", get_flying_status());
+            	 		    cmd_exe_err = INVALID_CMD;
+        	 	    }
 		        	    break;
 		        case CTRL_FRAME_TYPE_WAYPOINT_MODIFY:
-		        	    inflight_waypoint_modify(frame_wait_confirm);
+	        	 	if(get_flying_status() & WP_MODIFY_VALID)
+	        	 		inflight_waypoint_modify(frame_wait_confirm);
+	        	 	else {
+	        	 		print_err("aircarft can not modify way point now %d\n", get_flying_status());
+        	 		    cmd_exe_err = INVALID_CMD;
+	        	 	}
 		        	 break;
 		        case CTRL_FRAME_TYPE_WAYPOINT_INIT:
-		        	 	waypoint_init(frame_wait_confirm);
+        	 	    if(get_flying_status() == AIRCRAFT_PREPARING)
+        	 		     waypoint_init(frame_wait_confirm);
+        	 	    else {
+        	 		        print_err("can not set waypoint now %d\n", get_flying_status());
+            	 		    cmd_exe_err = INVALID_CMD;
+        	 	    }
 		        	 break;
 		        case CTRL_FRAME_TYPE_FIRM_UPDATE:
-		        	    firmware_upgrade(frame_wait_confirm->data,frame_wait_confirm->data_size);
+        	 	    if(get_flying_status() == AIRCRAFT_PREPARING)
+        	 		     firmware_upgrade(frame_wait_confirm->data,frame_wait_confirm->data_size);
+        	 	    else {
+        	 		     print_err("can not update firmware now %d\n", get_flying_status());
+        	 		     cmd_exe_err = INVALID_CMD;
+        	 	    }
 		        	 break;
 		        default:
 		        	print_err("unsupport control cmd type received\n");
+		        	cmd_exe_err = UNSUPPORTED_CMD;
 		        	break;
 	       }
 	        //command execute over ,send response
 	        frame_wait_confirm->type = 0;
-	        control_cmd_response_exe(buf[CTRL_FRAME_MASK_DATA]);
+	        if(cmd_exe_err == 0)
+	        	control_cmd_response_exe(buf[CTRL_FRAME_MASK_DATA]);
+	        else
+	            fault_status_return(cmd_exe_err);
 		}else
 			/* the frame type waiting to be confirmed is not the same as received confirm cmd
 			 * something is wrong with the confirm command
@@ -389,8 +478,8 @@ unsigned int serial_data_recv_ctrl(frame_info *frame_info ,unsigned char *buf)
                  if(buf[frame_info->frame_size-1]==CTRL_FRAME_END){
 
             	     frame_crc = (buf[frame_info->frame_size-2]<<8) | buf[frame_info->frame_size-3];
-            	     //if(frame_crc==crc_checksum16(buf, frame_info->frame_size-3)){
-            	     if(1){
+            	     if(frame_crc==crc_checksum16(buf, frame_info->frame_size-3)){
+            	     //if(1){
             		    // we have a valid CRC
             	    	 //print_debug("ctrl :valid crc\n");
 
@@ -452,8 +541,8 @@ unsigned int serial_data_recv_ctrl(frame_info *frame_info ,unsigned char *buf)
 static void *sensor_data_collect()
 {
 
-	int i = 0;
-	int m = 0;
+	//int i = 0;
+	//int m = 0;
 	unsigned int data_len = 0;
 	int maxfd = 0;
 	fd_set rfds;

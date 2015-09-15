@@ -343,6 +343,10 @@ enum SYSTEM_STATUS {
 	SYS_PREPARE_TAKEOFF,
 };
 
+FILE *fp_fly_status;
+//FILE *fp_way_point;
+
+
 void set_system_status(int status);
 int get_system_status();
 

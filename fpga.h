@@ -16,8 +16,11 @@
 
 /* SPI write command */
 #define  SPI_WRITE_CONTROL_REG      0x0003    /*  control register of FPGA
-                                               * bit0 : high ,uart3 switch to CPU2
+                                               * bit16 : high ,uart3 switch to CPU2
+                                               * bit0  : high , PWM out switch to manual mode
                                                */
+#define  CTRL_REG_MASK_MANUAL           0
+#define  CTRL_REG_MASK_UART3_SWITCH     15
 
 #define  SPI_WRITE_CPU_MODE         0x0005    /* cpu mode register,cpu have to write the reg every time plane changes mode
                                                * 4'b0000: self test
@@ -89,5 +92,6 @@ int spi_open();
 void spi_close();
 uint16 get_board_id();
 uint32 get_fpga_version();
-float  get_sonar_data();
+uint16  get_sonar_data();
+int set_control_register(int mask_bit);
 #endif

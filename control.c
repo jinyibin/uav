@@ -292,6 +292,7 @@ void flying_status_return()
 	uint8 *fa = (uint8*)(get_flying_attitude());
 	uint8  buf[145];
 	uint16 crc_value;
+	uint8  rc_data[20];
 
 	buf[0] = CTRL_FRAME_START1;
 	buf[1] = CTRL_FRAME_START2;
@@ -308,10 +309,14 @@ void flying_status_return()
 
 	*(uint32*)(buf+107)  = get_sonar_data();
 
-    buf[111] = 0;
-    buf[112] = 0;  // next waypoint
+	buf[111] = gepoint.id & 0xFF ;
+	buf[112] = gepoint.id >> 8 ;// next waypoint
 
-    memcpy(buf+113,(uint8 *)(&ppwm),20);//pwm output
+    if(get_flying_status() == AIRCRAFT_MANUAL_MODE){
+       read_rc_data((uint16*)rc_data);
+       memcpy(buf+113,rc_data,20);
+    }else
+       memcpy(buf+113,(uint8 *)(&ppwm),20);//pwm output
 
     buf[133] = get_flying_status()&0xFF;
     buf[134] = get_flying_status()>>8;
@@ -328,6 +333,7 @@ void flying_status_return()
 	buf[142] = crc_value&0xFF;
 	buf[143] = crc_value>>8;
 	buf[144] = CTRL_FRAME_END;
+	fwrite(buf,145,1,fp_fly_status);
 	control_cmd_send(buf, 145);
 }
 
@@ -360,6 +366,10 @@ int poweron_self_check()
 {
 	int ret = -1;
 	int timeout = 0;
+
+    if((fp_fly_status=fopen("fly_status","wb+"))==NULL){
+      printf("can not open file:fly_status\n");
+    }
 
 	ret=spi_open();
 #ifndef debug
@@ -559,6 +569,7 @@ void send_version()
 void data_export()
 {
 	waypoint_list_s *wp = waypoint_list_head;
+	int i=0;
 	if(wp==NULL){
 		printf("no way point data\n");
 		return;
@@ -568,6 +579,28 @@ void data_export()
        printf("%2d,%8f,%lf,%lf,%8f,%x,%x\n",wp->waypoint.id,wp->waypoint.v,wp->waypoint.lon,wp->waypoint.lat,wp->waypoint.h,wp->waypoint.task,wp->waypoint.task_para);
 	   wp = wp->next;
 	}while(wp!=NULL);
+	printf("heli config:");
+	printf("%d,%d,",aircraft_preparing_status.h_tp,aircraft_preparing_status.om);
+	printf("%d,%d,",aircraft_preparing_status.fc,aircraft_preparing_status.cp_tp);
+	printf("%d,%d,",aircraft_preparing_status.o_fp,aircraft_preparing_status.tg);
+	printf("%d,%d,",aircraft_preparing_status.max_v,aircraft_preparing_status.g_tp);
+	printf("%d,%d,",aircraft_preparing_status.radar,aircraft_preparing_status.reserved1);
+	printf("%d\n",aircraft_preparing_status.reserved2);
+    printf("flying para1:");
+	for(i=0;i<16;i++)
+    	printf("%d,",control_parameter_remote1[i]);
+	 printf("\n");
+	 printf("flying para2:");
+		for(i=0;i<16;i++)
+	    	printf("%d,",control_parameter_remote2[i]);
+		 printf("\n");
+
+		 printf("joystick data:");
+			for(i=0;i<8;i++)
+		    	printf("%d,",grm.c[i]);
+			 printf("\n");
+
+
 }
 
 

@@ -157,7 +157,7 @@ uint16 spi_read_one_word(uint16 addr)
 
 int spi_write_one_word(uint16 addr, uint16 data)
 {
-	int ret;
+	int ret=0;
 
 	spi_tr.len = 8;
 
@@ -319,7 +319,7 @@ int read_rc_data(uint16 *data)
 void joystick_execute(int *pwm)
 {
 	int i = 0;
-	uint16 base_addr = 0x11;
+
 	for (i = 0; i < 8; i++) {
 		print_debug("0x%04x ", pwm[i]);
 		//spi_write(base_addr + i, pwm[i]);//???
@@ -340,12 +340,22 @@ uint32 get_fpga_version()
    return (high<<16) | low;
 }
 
-float get_sonar_data()
+uint16 get_sonar_data()
 {
   uint16 raw_data_58us;
-  float  data_cm;
+  //float  data_cm;
   raw_data_58us=spi_read_one_word(SPI_READ_SONAR_DATA);
-  data_cm = ((float)raw_data_58us)/58;// the raw data is 1cm per 58us;
-  return data_cm;
+  //data_cm = ((float)raw_data_58us)/58;// the raw data is 1cm per 58us;
+  return raw_data_58us;
 
+}
+
+int set_control_register(int mask_bit)
+{
+   int ret=0;
+	uint16 data;
+   data = spi_read_one_word(SPI_READ_CONTROL_REG);
+   data = data | (1 << mask_bit);
+   ret=spi_write_one_word(SPI_WRITE_CONTROL_REG,data);
+   return ret;
 }
