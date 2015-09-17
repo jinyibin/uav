@@ -275,9 +275,11 @@ void fault_status_return(uint8 fault)
 	buf[1] = CTRL_FRAME_START2;
 	buf[2] = get_aircraft_no()&0xFF;
 	buf[3] = get_aircraft_no()>>8;
-	*(uint32*)(buf+4) = 15;
+	*(uint16*)(buf+4) = 15;
+	buf[6] = 1;
+	buf[7] = 0;
 	buf[8] = 1;
-	buf[9] = 1;
+	buf[9] = 0;
 	buf[10] = CTRL_FRAME_TYPE_ERROR;
 	buf[11] = fault;
 	crc_value=crc_checksum16(buf, 12);
@@ -298,9 +300,11 @@ void flying_status_return()
 	buf[1] = CTRL_FRAME_START2;
 	buf[2] = get_aircraft_no()&0xFF;
 	buf[3] = get_aircraft_no()>>8;
-	*(uint32*)(buf+4) = 0x91;
+	*(uint16*)(buf+4) = 0x91;
+	buf[6] = 1;
+	buf[7] = 0;
 	buf[8] = 1;
-	buf[9] = 1;
+	buf[9] = 0;
 	buf[10] = CTRL_FRAME_TYPE_FLY_STATUS;
 	// compiler add 4bytes between float data and double data for flying_attitude struct
 	// so we have to copy separately
@@ -490,9 +494,11 @@ void update_control_data(uint8 *buf)
 	buf[1] = CTRL_FRAME_START2;
 	buf[2] = get_aircraft_no()&0xFF;
 	buf[3] = get_aircraft_no()>>8;
-	*(uint32*)(buf+4) = frame_size;
+	*(uint16*)(buf+4) = frame_size;
+	buf[6] = 1;
+	buf[7] = 0;
 	buf[8] = 1;
-	buf[9] = 1;
+	buf[9] = 0;
 	buf[10] = CTRL_FRAME_TYPE_CMD_ACK ;
 	memcpy(buf+11,data,data_size);
 	crc_value = crc_checksum16(buf, data_size+11);
@@ -514,9 +520,11 @@ void update_control_data(uint8 *buf)
  	buf[1] = CTRL_FRAME_START2;
  	buf[2] = get_aircraft_no()&0xFF;
  	buf[3] = get_aircraft_no()>>8;
- 	*(uint32*)(buf+4) = 0x0F;
+ 	*(uint16*)(buf+4) = 0x0F;
+	buf[6] = 1;
+	buf[7] = 0;
 	buf[8] = 1;
-	buf[9] = 1;
+	buf[9] = 0;
  	buf[10] = CTRL_FRAME_TYPE_CMD_EXE ;
  	buf[11] = data;
  	crc_value = crc_checksum16(buf, 12);
@@ -549,9 +557,11 @@ void send_version()
 	buf[1] = CTRL_FRAME_START2;
 	buf[2] = get_aircraft_no()&0xFF;
 	buf[3] = get_aircraft_no()>>8;
-	*(uint32*)(buf+4) = 0x1F;
-    buf[8] = 1;
-    buf[9] = 1;
+	*(uint16*)(buf+4) = 0x1F;
+	buf[6] = 1;
+	buf[7] = 0;
+	buf[8] = 1;
+	buf[9] = 0;
 	buf[10] = CTRL_FRAME_TYPE_VERSION ;
 	buf[11] = get_board_id();
 	*(uint32*)(buf+12) = 0x0; // kernel version

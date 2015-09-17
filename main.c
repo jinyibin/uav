@@ -34,12 +34,14 @@ int main( int argc,char *argv[])
 	auto_flying_start();
 	usleep(10000);
 	while (1) {
-        counter++;
+
 		gettimeofday(&tpStart, NULL);
 		start_time = tpStart.tv_sec * 1000000 + tpStart.tv_usec;
 
 		flying_status_return();
+		/*
 		//save data every 1 minute
+		 counter++;
 		if(counter==3000){
 			counter=0;
 			fclose(fp_fly_status);
@@ -47,7 +49,7 @@ int main( int argc,char *argv[])
 		      printf("reopen file failed :fly_status\n");
 		    }
 		}
-
+        */
 	    gettimeofday(&tpStart, NULL);
 		stop_time = tpStart.tv_sec * 1000000 + tpStart.tv_usec;
 		if ((stop_time  - start_time) < 20000) {

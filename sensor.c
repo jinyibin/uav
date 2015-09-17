@@ -94,8 +94,8 @@ int control_data_parse(unsigned char *buf, frame_info *frame_info,frame_wait_con
               //handle the control command
               frame_wait_confirm->type = frame_type;
               frame_wait_confirm->data_size = frame_info->frame_size;
-              frame_wait_confirm->frame_num = (buf[CTRL_FRAME_MASK_FRAME_NUM-1]<<8) | buf[CTRL_FRAME_MASK_FRAME_NUM];
-              frame_wait_confirm->frame_id  = (buf[CTRL_FRAME_MASK_FRAME_ID-1]<<8) | buf[CTRL_FRAME_MASK_FRAME_ID];
+              frame_wait_confirm->frame_num = (buf[CTRL_FRAME_MASK_FRAME_NUM+1]<<8) | buf[CTRL_FRAME_MASK_FRAME_NUM];
+              frame_wait_confirm->frame_id  = (buf[CTRL_FRAME_MASK_FRAME_ID+1]<<8) | buf[CTRL_FRAME_MASK_FRAME_ID];
               //store the data field for process after confirming the command
 			  memcpy(frame_wait_confirm->data,buf+CTRL_FRAME_MASK_DATA,frame_info->frame_size-CTRL_FRAME_LEN_NO_DATA);
 			  //send out response command to the ground
