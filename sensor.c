@@ -89,6 +89,7 @@ int control_data_parse(unsigned char *buf, frame_info *frame_info,frame_wait_con
 	       (frame_type==CTRL_FRAME_TYPE_WAYPOINT_INIT)    ||
 	       (frame_type==CTRL_FRAME_TYPE_GROUND_OK)    ||
 	       (frame_type==CTRL_FRAME_TYPE_MANUAL_MODE)  ||
+	       (frame_type==CTRL_FRAME_TYPE_RESET)  ||
 	       (frame_type==CTRL_FRAME_TYPE_FIRM_UPDATE)
 	       ){
               //handle the control command
@@ -120,8 +121,10 @@ int control_data_parse(unsigned char *buf, frame_info *frame_info,frame_wait_con
 			 */
 	        switch (frame_wait_confirm->type) {
 		        case CTRL_FRAME_TYPE_SERVO_TEST:
-        	 	    if(get_flying_status() == AIRCRAFT_PREPARING)
-        	 		    steering_test();
+        	 	    if(get_flying_status() == AIRCRAFT_PREPARING){
+        	 	   	    printf("servo testing...\n");
+        	 	   	    //servo_test_enable=1;
+        	 	    }
         	 	    else {
         	 		    print_err("can not test rotar now %d\n", get_flying_status());
         	 		    cmd_exe_err = INVALID_CMD;
@@ -191,6 +194,17 @@ int control_data_parse(unsigned char *buf, frame_info *frame_info,frame_wait_con
 
         	 	    }else {
        	 		         print_err("can not switch to manual mode now %d\n", get_flying_status());
+             	 		    cmd_exe_err = INVALID_CMD;
+        	 	    }
+        	 		         break;
+		        case CTRL_FRAME_TYPE_RESET:
+        	 	    if(get_flying_status() & RESET_VALID){
+        	 		    set_flying_status(AIRCRAFT_PREPARING);
+        	 		    //switch pwm output to aoto mode
+        	 		    cmd_exe_err=reset_control_register(CTRL_REG_MASK_MANUAL);
+
+        	 	    }else {
+       	 		         print_err("can not switch to reset mode now %d\n", get_flying_status());
              	 		    cmd_exe_err = INVALID_CMD;
         	 	    }
         	 		         break;

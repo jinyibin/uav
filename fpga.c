@@ -187,7 +187,7 @@ int spi_write_one_word(uint16 addr, uint16 data)
 
     	 return SPI_WRITE_FAILED;
     }
-    return ret;
+    return 0;
 }
 
  int spi_write_one_word_no_check(uint16 addr, uint16 data)
@@ -207,7 +207,7 @@ int spi_write_one_word(uint16 addr, uint16 data)
 		ret = -1;
 	}
 
-    return ret;
+    return 0;
 }
 
 int write_pwm_data(uint16 *data)
@@ -356,6 +356,16 @@ int set_control_register(int mask_bit)
 	uint16 data;
    data = spi_read_one_word(SPI_READ_CONTROL_REG);
    data = data | (1 << mask_bit);
+   ret=spi_write_one_word(SPI_WRITE_CONTROL_REG,data);
+   return ret;
+}
+
+int reset_control_register(int mask_bit)
+{
+   int ret=0;
+	uint16 data;
+   data = spi_read_one_word(SPI_READ_CONTROL_REG);
+   data = data & (0<< mask_bit);
    ret=spi_write_one_word(SPI_WRITE_CONTROL_REG,data);
    return ret;
 }

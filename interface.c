@@ -115,7 +115,8 @@ static void *auto_flying_execute()
 		timer_ts = tpStart.tv_sec * 1000000 + tpStart.tv_usec;
 		fa=get_flying_attitude();
 
-	    print_debug("frame %4d  frame time:%d systime:%f,%d\n",i++,fa->g_time,timer_ts*0.001,sizeof(flying_attitude_s));
+	    //print_debug("frame %4d  frame time:%d systime:%f,%d\n",i++,fa->g_time,timer_ts*0.001,sizeof(flying_attitude_s));
+		gepoint.id=i++;
 		do {
 		        gettimeofday(&tpEnd, NULL);
 		        timeUse = 1000 * (tpEnd.tv_sec - tpStart.tv_sec) + 0.001 * (tpEnd.tv_usec - tpStart.tv_usec);

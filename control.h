@@ -56,6 +56,7 @@
 #define CTRL_FRAME_TYPE_EXPORT_DATA      0x86
 #define CTRL_FRAME_TYPE_GROUND_OK        0xEF        //gound check over,ready to go
 #define CTRL_FRAME_TYPE_MANUAL_MODE      0x5E        //heli is controlled manually
+#define CTRL_FRAME_TYPE_RESET            0x00        //reset  in autopilot mode
 /* frame to the ground   */
 #define CTRL_FRAME_TYPE_FLY_STATUS       0x55
 #define CTRL_FRAME_TYPE_ERROR            0x41

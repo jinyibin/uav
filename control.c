@@ -11,6 +11,7 @@
 #include "control.h"
 
 
+
 static int system_status = 0;
 static int waypoint_is_ready = 0;
 static int prepare_setting_is_ready = 0;
@@ -423,9 +424,20 @@ exit:
 	return ret;	
 }
 
+static int servo_test_enable=0;
+static int servo_test_cnt=0;
 void steering_test()
 {
-	printf("servo test\n");
+   servo_test_cnt++;
+   if(servo_test_enable){
+	   if(servo_test_cnt==1){
+
+	   }else if(servo_test_cnt==3){
+
+	   }
+
+
+   }
 
 }
 

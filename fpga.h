@@ -94,4 +94,5 @@ uint16 get_board_id();
 uint32 get_fpga_version();
 uint16  get_sonar_data();
 int set_control_register(int mask_bit);
+int reset_control_register(int mask_bit);
 #endif
