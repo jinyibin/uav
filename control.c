@@ -319,7 +319,7 @@ void flying_status_return()
 
     if(get_flying_status() == AIRCRAFT_MANUAL_MODE){
        read_rc_data((uint16*)rc_data);
-       memcpy(buf+113,rc_data,20);
+       memcpy(buf+113,rc_data,14);
     }else
        memcpy(buf+113,(uint8 *)(&ppwm),20);//pwm output
 

@@ -281,7 +281,7 @@ int read_rc_data(uint16 *data)
 	uint16 *p;
 	uint16 *d;
 
-    spi_tr.len =24;
+    spi_tr.len =28;
 
 	p=(uint16*)spi_tx;
 	d=(uint16*)spi_rx;
