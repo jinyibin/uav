@@ -365,6 +365,7 @@ void master_slaver_sync()
 }
 */
 
+extern uint32 command;
 
 
 int poweron_self_check()
@@ -372,7 +373,7 @@ int poweron_self_check()
 	int ret = -1;
 	int timeout = 0;
 
-    if((fp_fly_status=fopen("fly_status","wb+"))==NULL){
+    if((fp_fly_status=fopen("fly_status.raw","wb+"))==NULL){
       printf("can not open file:fly_status\n");
     }
 
@@ -396,19 +397,34 @@ int poweron_self_check()
 #endif
 
 	set_flying_status(AIRCRAFT_PREPARING);
-	// wait for flying attitude sensor data
-	while (timeout <= 600) {
-		sleep(1);
-		if(flying_attitude_sensor_is_active())
-			break;
-		timeout++;
-	}
+	if(command==0){
+	//UAV is working in normal mode
+	   // wait for flying attitude sensor data
+	    while (timeout <= 600) {
+		    sleep(1);
+		    if(flying_attitude_sensor_is_active())
+			  break;
+		    timeout++;
+	    }
 
-	if (timeout >600) {
-		print_err("flying attitude sensor is inactive, please check serial port is connected\n");
-		goto exit;
-	}
-	print_debug("Flying attitude sensor is active\n");
+	    if (timeout >600) {
+		    print_err("flying attitude sensor is inactive, please check serial port is connected\n");
+		    goto exit;
+	    }
+	    print_debug("Flying attitude sensor is active\n");
+	}else if(command==1){
+	//UAV is working in test mode
+		printf("uav is working in test mode,IMU is by passed,using test data instead\n");
+	}else{
+		printf(" error command,please check the usage:\n");
+        printf(" usage: uav [command] [gap] ]\n");
+        printf(" [command]: 0--normal mode,used when run in the air\n");
+        printf(" [command]: 1--test mode,used for platform test.use this mode  \n");
+        printf("               when no IMU connected ,\n");
+        printf(" [frequency]: the frequency (ms/frame) in which UAV send fly status data\n");
+     }
+
+
 	while (1) {
 		flying_status_return();
 		usleep(500000); //500ms

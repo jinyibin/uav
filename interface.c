@@ -100,6 +100,9 @@ static void *auto_flying_execute()
 	}
 }
 */
+
+extern uint32 command;
+extern uint32 counter_global;
 static void *auto_flying_execute()
 {
 	struct timeval tpStart,tpEnd;
@@ -111,27 +114,57 @@ static void *auto_flying_execute()
 
 
 	while(running) {
-		gettimeofday(&tpStart, NULL);
-		timer_ts = tpStart.tv_sec * 1000000 + tpStart.tv_usec;
-		fa=get_flying_attitude();
+		counter_global++;
 
-	    //print_debug("frame %4d  frame time:%d systime:%f,%d\n",i++,fa->g_time,timer_ts*0.001,sizeof(flying_attitude_s));
-		gepoint.id=i++;
-		do {
+		if(command==0){
+		// running in normal mode
+			printf("running control algorithm\n");
+		}else if(command==1){
+		// running in test mode
+		    gettimeofday(&tpStart, NULL);
+		    timer_ts = tpStart.tv_sec * 1000000 + tpStart.tv_usec;
+		    fa=get_flying_attitude();
+
+			fa->roll=0+((float)(counter_global%450)/3600)*(2*PI);
+			fa->pitch=0+((float)(counter_global%450)/3600)*(2*PI);
+			fa->yaw=0+((float)(counter_global%3600)/3600)*(2*PI);
+			fa->gx=0;
+			fa->gy=0;
+			fa->gz=0;
+			fa->ax=0;
+			fa->ay=0;
+			fa->az=0;
+			fa->g_time=0+counter_global*20;
+			fa->vn=0;
+			fa->ve=0;
+			fa->vd=0;
+			fa->heading=0+(counter_global%(360*10))*10000;
+			fa->b_h=0+(counter_global%5000)*100;
+			fa->lat=40.161499+counter_global/100000;
+			fa->Long=116.260435+counter_global/100000;
+			fa->g_h=66.888026+counter_global/100000;
+			fa->vx=0;
+			fa->vy=0;
+			fa->vz=0;
+			ppwm.c[0]=1000+counter_global%1000;
+			ppwm.c[1]=500+counter_global%1000;
+			ppwm.c[2]=1500+counter_global%1000;
+			ppwm.c[3]=2000+counter_global%1000;
+			ppwm.c[4]=3000+counter_global%1000;
+			ppwm.c[5]=4000+counter_global%1000;
+		    do {
 		        gettimeofday(&tpEnd, NULL);
 		        timeUse = 1000 * (tpEnd.tv_sec - tpStart.tv_sec) + 0.001 * (tpEnd.tv_usec - tpStart.tv_usec);
-		} while(timeUse < 3);
+		    } while(timeUse < 3);
 
-	    gettimeofday(&tpStart, NULL);
-		current_ts = tpStart.tv_sec * 1000000 + tpStart.tv_usec;
-		if ((current_ts - timer_ts) < TIMER_CYCLE) {
-			usleep(TIMER_CYCLE-(current_ts -timer_ts));
-		} else {
-			print_err("Thread cost too much time\n");
+	        gettimeofday(&tpStart, NULL);
+		    current_ts = tpStart.tv_sec * 1000000 + tpStart.tv_usec;
+		    if ((current_ts - timer_ts) < TIMER_CYCLE) {
+			   usleep(TIMER_CYCLE-(current_ts -timer_ts));
+		    } else {
+			   print_err("Thread cost too much time\n");
+		    }
 		}
-		//timer_ts += TIMER_CYCLE;
-
-
 	}
 }
 

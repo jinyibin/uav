@@ -551,7 +551,7 @@ unsigned int serial_data_recv_ctrl(frame_info *frame_info ,unsigned char *buf)
  	return 0;
 }
 
-
+extern uint32 command;
 static void *sensor_data_collect()
 {
 
@@ -608,7 +608,8 @@ static void *sensor_data_collect()
 				}
 		} else {
 #ifdef debug
-			print_err("Device read timeout\n");// serial port received timeout.
+			if(command==0)
+			    print_err("Device read timeout\n");// serial port received timeout.
 #else
 			fault_status_response(SERIAL_NO_DATA);
 #endif

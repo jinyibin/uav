@@ -11,9 +11,25 @@
 #include "status.h"
 #include <unistd.h>
 #include <sys/time.h>
+/*-----------------------------------------------------------------------*/
+    uint32 command;
+    uint32 frequency;
+    uint32 counter_global=0;
 
 int main( int argc,char *argv[])
 {
+    uint32 period;
+	if(argc<2){
+	           printf(" usage: uav [command] [gap] ]\n");
+	           printf(" [command]: 0--normal mode,used when run in the air\n");
+	           printf(" [command]: 1--test mode,used for platform test.use this mode  \n");
+	           printf("               when no IMU connected ,\n");
+	           printf(" [frequency]: the frequency (ms/frame) in which UAV send fly status data\n");
+	        }
+	command = atol(argv[1]);
+	frequency = atol(argv[2]);
+    period= frequency * 1000;
+
 	int ret = -1;
 	uint32 counter=0;
 	struct timeval tpStart,tpEnd;
@@ -52,8 +68,8 @@ int main( int argc,char *argv[])
         */
 	    gettimeofday(&tpStart, NULL);
 		stop_time = tpStart.tv_sec * 1000000 + tpStart.tv_usec;
-		if ((stop_time  - start_time) < 20000) {
-			usleep(20000-(stop_time  - start_time));
+		if ((stop_time  - start_time) < period) {
+			usleep(period-(stop_time  - start_time));
 		} else {
 			print_err("flying status return cost too much time\n");
 		}

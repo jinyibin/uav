@@ -16,6 +16,7 @@ typedef unsigned long long uint64;
 
 #define print_err printf
 #define print_debug printf
+#define PI 3.1415926
 
 #define debug
 
