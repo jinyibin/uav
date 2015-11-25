@@ -329,8 +329,8 @@ void flying_status_return()
     buf[135] = 0; // gps status
     buf[136] = 0; // imu status
     buf[137] = 0; // AP status :cpu1 or cpu2
-    buf[138] = get_input_voltage()&0xFF;
-    buf[139] = 0;
+    buf[138] = get_input_voltage()&0xFF;//AP power
+    buf[139] = get_monitor_voltage()&0xFF;//UAV power
     buf[140] = get_cpu_temperature()/1000;
     buf[141] = 0;
 
@@ -399,6 +399,9 @@ int poweron_self_check()
 	set_flying_status(AIRCRAFT_PREPARING);
 	if(command==0){
 	//UAV is working in normal mode
+		// reset CPLD ,this should be check later ,if CPLD should be reset when CPU recovers from failure.
+		reset_control_register(CTRL_REG_MASK_MANUAL);
+
 	   // wait for flying attitude sensor data
 	    while (timeout <= 600) {
 		    sleep(1);
@@ -412,15 +415,25 @@ int poweron_self_check()
 		    goto exit;
 	    }
 	    print_debug("Flying attitude sensor is active\n");
+
 	}else if(command==1){
 	//UAV is working in test mode
+		reset_control_register(CTRL_REG_MASK_MANUAL);
 		printf("uav is working in test mode,IMU is by passed,using test data instead\n");
+	}else if(command==2){
+    //UAV is in mannual mode ,for pwm data capture
+
+		set_flying_status(AIRCRAFT_MANUAL_MODE);
+		set_control_register(CTRL_REG_MASK_MANUAL);
+		set_system_status(SYS_PREPARE_SETTING);
+		printf("UAV is now working in data capturing mode\n");
 	}else{
 		printf(" error command,please check the usage:\n");
         printf(" usage: uav [command] [gap] ]\n");
         printf(" [command]: 0--normal mode,used when run in the air\n");
         printf(" [command]: 1--test mode,used for platform test.use this mode  \n");
         printf("               when no IMU connected ,\n");
+        printf(" [command]: 2--manual mode,used when capturing PWM data\n");
         printf(" [frequency]: the frequency (ms/frame) in which UAV send fly status data\n");
      }
 

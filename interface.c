@@ -108,23 +108,18 @@ static void *auto_flying_execute()
 	struct timeval tpStart,tpEnd;
 	float timeUse;
 	flying_attitude_s *fa;
-	int i=0;
 	uint64 current_ts, timer_ts;
-
-
 
 	while(running) {
 		counter_global++;
 
 		if(command==0){
 		// running in normal mode
-			printf("running control algorithm\n");
+			//printf("running control algorithm\n");
+			counter_global=0;
 		}else if(command==1){
 		// running in test mode
-		    gettimeofday(&tpStart, NULL);
-		    timer_ts = tpStart.tv_sec * 1000000 + tpStart.tv_usec;
-		    fa=get_flying_attitude();
-
+			fa=get_flying_attitude();
 			fa->roll=0+((float)(counter_global%450)/3600)*(2*PI);
 			fa->pitch=0+((float)(counter_global%450)/3600)*(2*PI);
 			fa->yaw=0+((float)(counter_global%3600)/3600)*(2*PI);
@@ -152,19 +147,22 @@ static void *auto_flying_execute()
 			ppwm.c[3]=2000+counter_global%1000;
 			ppwm.c[4]=3000+counter_global%1000;
 			ppwm.c[5]=4000+counter_global%1000;
-		    do {
-		        gettimeofday(&tpEnd, NULL);
-		        timeUse = 1000 * (tpEnd.tv_sec - tpStart.tv_sec) + 0.001 * (tpEnd.tv_usec - tpStart.tv_usec);
+		}
+
+		gettimeofday(&tpStart, NULL);
+		timer_ts = tpStart.tv_sec * 1000000 + tpStart.tv_usec;
+		do {
+			 gettimeofday(&tpEnd, NULL);
+			 timeUse = 1000 * (tpEnd.tv_sec - tpStart.tv_sec) + 0.001 * (tpEnd.tv_usec - tpStart.tv_usec);
 		    } while(timeUse < 3);
 
-	        gettimeofday(&tpStart, NULL);
-		    current_ts = tpStart.tv_sec * 1000000 + tpStart.tv_usec;
-		    if ((current_ts - timer_ts) < TIMER_CYCLE) {
-			   usleep(TIMER_CYCLE-(current_ts -timer_ts));
-		    } else {
-			   print_err("Thread cost too much time\n");
-		    }
-		}
+		gettimeofday(&tpStart, NULL);
+		current_ts = tpStart.tv_sec * 1000000 + tpStart.tv_usec;
+		if ((current_ts - timer_ts) < TIMER_CYCLE)
+		    usleep(TIMER_CYCLE-(current_ts -timer_ts));
+		else
+			print_err("Thread cost too much time\n");
+
 	}
 }
 

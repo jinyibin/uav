@@ -7,5 +7,6 @@ void adc_close();
 int  adc_init();
 int get_cpu_temperature();
 int get_input_voltage();
+int get_monitor_voltage();
 
 #endif

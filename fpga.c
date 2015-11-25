@@ -280,6 +280,8 @@ int read_rc_data(uint16 *data)
 
 	uint16 *p;
 	uint16 *d;
+	uint8 i;
+	uint8 error=0;
 
     spi_tr.len =28;
 
@@ -314,6 +316,26 @@ int read_rc_data(uint16 *data)
        *(data+5) = *(d+11); //rc channel6 data
        *(data+6) = *(d+13); //rc period data
 	}
+    for(i=0;i<6;i++){
+       if((*(data+i))==0)
+    	   error++;
+    }
+    if(error>0){
+ 	   ret = ioctl(spi_fd, SPI_IOC_MESSAGE(1), &spi_tr);
+ 	   	if (ret < 1){
+ 	   		print_err("can't send rc read command \n");
+ 	   		ret = -1;
+ 	   	}
+ 	   	else{
+ 	          *data     = *(d+1);  //rc channel1 data
+ 	          *(data+1) = *(d+3);  //rc channel2 data
+ 	          *(data+2) = *(d+5);  //rc channel3 data
+ 	          *(data+3) = *(d+7);  //rc channel4 data
+ 	          *(data+4) = *(d+9);  //rc channel5 data
+ 	          *(data+5) = *(d+11); //rc channel6 data
+ 	          *(data+6) = *(d+13); //rc period data
+ 	   	}
+    }
 	return ret;
 }
 void joystick_execute(int *pwm)

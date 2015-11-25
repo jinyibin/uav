@@ -24,11 +24,13 @@ int main( int argc,char *argv[])
 	           printf(" [command]: 0--normal mode,used when run in the air\n");
 	           printf(" [command]: 1--test mode,used for platform test.use this mode  \n");
 	           printf("               when no IMU connected ,\n");
+	           printf(" [command]: 2--manual mode,used when capturing PWM data\n");
 	           printf(" [frequency]: the frequency (ms/frame) in which UAV send fly status data\n");
 	        }
 	command = atol(argv[1]);
 	frequency = atol(argv[2]);
     period= frequency * 1000;
+    printf("version:20151124-1926\n");
 
 	int ret = -1;
 	uint32 counter=0;
