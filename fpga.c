@@ -14,7 +14,7 @@
 
 #include "datatype.h"
 #include "fpga.h"
-
+#include "control.h"
 
 static const char *spidev = "/dev/spidev0.0";
 static int spi_fd = -1;

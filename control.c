@@ -1,16 +1,18 @@
-#include "sensor.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include "status.h"
 #include "crc.h"
 #include "interface.h"
 #include "fpga.h"
 #include "adc.h"
 #include "control.h"
-
-
+#include "serial.h"
+#include <sys/time.h>
+#include <time.h>
+#include "ComManage.h"
+#include "ProtocolImu.h"
 
 static int system_status = 0;
 static int waypoint_is_ready = 0;
@@ -22,6 +24,96 @@ waypoint_info_s waypoint_info = {0,0};
 static waypoint_list_s *waypoint_list_head = NULL;
 static waypoint_list_s *waypoint_list_tail = NULL;
 static waypoint_list_s *waypoint_list_current = NULL;
+
+
+static uint16 flying_status = 0;
+static flying_attitude_s flying_attitude;
+static uint64 fa_timestamp = 0;
+
+
+uint64 get_current_time()
+{
+	struct timeval tv;
+	gettimeofday(&tv, NULL);
+	return tv.tv_sec * 1000 + tv.tv_usec/1000;
+}
+
+flying_attitude_s *get_flying_attitude()
+{
+	return &flying_attitude;
+}
+
+void set_flying_attitude(uint8 *buf)
+{
+	flying_attitude_s *p;
+	uint8 data[GPS_FRAME_LEN-8];
+	p=&flying_attitude;
+
+	memcpy(data,buf+5,GPS_FRAME_LEN-8);//4bytes alignment of the data
+
+	p->roll=*((float *)data);
+	p->pitch=*((float *)(data+4));
+	p->yaw=*((float *)(data+8));
+	p->gx=*((float *)(data+12));
+	p->gy=*((float *)(data+16));
+	p->gz=*((float *)(data+20));
+	p->ax=*((float *)(data+24));
+	p->ay=*((float *)(data+28));
+	p->az=*((float *)(data+32));
+	p->g_time=*((unsigned int *)(data+36));
+	p->vn=*((int *)(data+40));
+	p->ve=*((int *)(data+44));
+	p->vd=*((int *)(data+48));
+	p->heading=*(( int *)(data+52));
+	p->b_h=*(( int *)(data+56));
+	p->lat=*((double *)(data+60));
+	p->Long=*((double *)(data+68));
+	p->g_h=*((double *)(data+76));
+	p->vx=*((float *)(data+84));
+	p->vy=*((float *)(data+88));
+	p->vz=*((float *)(data+92));
+	//memcpy(&flying_attitude, buf, sizeof(flying_attitude_s));
+	fa_timestamp = get_current_time();
+}
+
+void gps_time_update(uint32 g_time)
+{
+
+}
+uint16 get_flying_status()
+{
+	return flying_status;
+}
+
+void set_flying_status(uint16 status)
+{
+	flying_status = status;
+}
+
+uint16 get_aircraft_no()
+{
+	return 0x0001;
+}
+
+void firmware_upgrade(uint8 *buf, uint32 size)
+{
+	FILE *fp = NULL;
+	#define FILE_PATH "/data/backup/upgrade"
+	fp = fopen(FILE_PATH, "w+");
+	if (fp == NULL) {
+		print_err("File %s open failed\n", FILE_PATH);
+		return;
+	}
+	fwrite(buf, 1, size, fp);
+	fclose(fp);
+	fp = NULL;
+}
+
+int flying_attitude_sensor_is_active()
+{
+	return (get_current_time() - fa_timestamp) <= CONTROL_DUTY;
+}
+
 
 void set_system_status(int status)
 {
@@ -290,7 +382,7 @@ void fault_status_return(uint8 fault)
 	control_cmd_send(buf, 15);
 }
 
-void flying_status_return()
+void flying_status_return(int transmit_data)
 {
 	uint8 *fa = (uint8*)(get_flying_attitude());
 	uint8  buf[145];
@@ -339,7 +431,8 @@ void flying_status_return()
 	buf[143] = crc_value>>8;
 	buf[144] = CTRL_FRAME_END;
 	fwrite(buf,145,1,fp_fly_status);
-	control_cmd_send(buf, 145);
+	if(transmit_data)
+	   control_cmd_send(buf, 145);
 }
 
 /*
@@ -373,9 +466,7 @@ int poweron_self_check()
 	int ret = -1;
 	int timeout = 0;
 
-    if((fp_fly_status=fopen("fly_status.raw","wb+"))==NULL){
-      printf("can not open file:fly_status\n");
-    }
+
 
 	ret=spi_open();
 #ifndef debug
@@ -437,9 +528,13 @@ int poweron_self_check()
         printf(" [frequency]: the frequency (ms/frame) in which UAV send fly status data\n");
      }
 
+	generate_file_name(log_file_name);
+    if((fp_fly_status=fopen(log_file_name,"wb+"))==NULL){
+      printf("can not open file:%s\n",log_file_name);
+    }
 
 	while (1) {
-		flying_status_return();
+		flying_status_return(1);
 		usleep(500000); //500ms
 		if (get_system_status() >= SYS_PREPARE_SETTING) {
 			print_debug("Link is ready\n");
@@ -654,4 +749,18 @@ void data_export()
 
 }
 
+int control_cmd_send(uint8 *buf,uint32 buf_size)
+{
+	return serial_write(control_fd, buf, buf_size);
+
+}
+
+void generate_file_name(char *name)
+{
+	struct tm *local_time;
+	time_t local_time_seconds;
+	local_time_seconds=time(NULL);
+	local_time=localtime(&local_time_seconds);
+	strftime(name,sizeof(log_file_name),"/home/log/%Y%m%d%H%M%S.raw",local_time);
+}
 

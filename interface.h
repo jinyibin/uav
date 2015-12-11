@@ -2,6 +2,7 @@
 #define INTERFACE_H
 
 #include "datatype.h"
+#include "control.h"
 
 struct fstate {
 	float att[3];
@@ -25,11 +26,11 @@ char max_v;
 char radar;
 }; 
 
-struct wstate {
-	double posi[3];
-	float stan_p[3];
-	unsigned char statG[5];
-};
+//struct wstate {                          //2015-11-21 删除
+//	double posi[3];
+//	float stan_p[3];
+//	unsigned char statG[5];
+//};
 
 
 struct spoint {
@@ -69,14 +70,20 @@ struct lfstate {
 	float v_xyz[3];
 };
 
+struct parameter {      //2015-11-15 王强新增
+	uint16 k[32];
+};
+
 struct fstate gfstate; //flying status
 struct rm grm; //joystick data
 struct sstate gsfstate; //setting status
 
-struct wstate gwstate; //work status
+//struct wstate gwstate; //work status
 
 static struct spoint gspoint; //start flying point
 struct epoint gepoint; //end flying point
+
+struct parameter K;//parameter of controller setting by base-station  //2015-11-15 王强新增
 
 struct pwm ppwm; //PWM output
 

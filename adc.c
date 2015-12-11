@@ -5,6 +5,7 @@
 #include <fcntl.h>
 
 #include "adc.h"
+#include "control.h"
 #include "datatype.h"
 
 

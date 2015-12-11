@@ -6,9 +6,8 @@
 #include "interface.h"
 #include "fpga.h"
 #include "adc.h"
-#include "sensor.h"
+#include "ComManage.h"
 #include "serial.h"
-#include "status.h"
 #include <unistd.h>
 #include <sys/time.h>
 /*-----------------------------------------------------------------------*/
@@ -18,7 +17,7 @@
 
 int main( int argc,char *argv[])
 {
-    uint32 period;
+
 	if(argc<2){
 	           printf(" usage: uav [command] [gap] ]\n");
 	           printf(" [command]: 0--normal mode,used when run in the air\n");
@@ -29,8 +28,8 @@ int main( int argc,char *argv[])
 	        }
 	command = atol(argv[1]);
 	frequency = atol(argv[2]);
-    period= frequency * 1000;
-    printf("version:20151124-1926\n");
+
+    printf("version:20151211-1003\n");
 
 	int ret = -1;
 	uint32 counter=0;
@@ -41,7 +40,7 @@ int main( int argc,char *argv[])
 	}
 	while (get_flying_status() < AIRCRAFT_READY) {
 		usleep(500000);
-		flying_status_return();
+		flying_status_return(1);
 	}
 	/*
 	while (get_flying_status() < AIRCRAFT_TAKEOFF) {
@@ -56,22 +55,27 @@ int main( int argc,char *argv[])
 		gettimeofday(&tpStart, NULL);
 		start_time = tpStart.tv_sec * 1000000 + tpStart.tv_usec;
 
-		flying_status_return();
-		/*
-		//save data every 1 minute
+        if((frequency%CONTROL_PERIOD_MS)==0)
+		   flying_status_return(1);
+        else
+           flying_status_return(0);
+
+		//save log file every 1 minute
 		 counter++;
-		if(counter==3000){
+		if(counter==(CONTROL_FREQUENCY*60*1)){
 			counter=0;
 			fclose(fp_fly_status);
-		    if((fp_fly_status=fopen("fly_status","ab+"))==NULL){
-		      printf("reopen file failed :fly_status\n");
+			memset(log_file_name,sizeof(log_file_name),0);
+			generate_file_name(log_file_name);
+		    if((fp_fly_status=fopen(log_file_name,"wb+"))==NULL){
+		      printf("can not open file:%s\n",log_file_name);
 		    }
 		}
-        */
+
 	    gettimeofday(&tpStart, NULL);
 		stop_time = tpStart.tv_sec * 1000000 + tpStart.tv_usec;
-		if ((stop_time  - start_time) < period) {
-			usleep(period-(stop_time  - start_time));
+		if ((stop_time  - start_time) < CONTROL_PERIOD_US) {//save data every 20ms
+			usleep(CONTROL_PERIOD_US-(stop_time  - start_time));
 		} else {
 			print_err("flying status return cost too much time\n");
 		}

@@ -4,7 +4,6 @@
 #include <pthread.h>
 #include <sys/time.h>
 #include <unistd.h>
-#include "status.h"
 #include "control.h"
 #include "interface.h"
 
