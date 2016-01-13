@@ -27,54 +27,19 @@ static waypoint_list_s *waypoint_list_current = NULL;
 
 
 static uint16 flying_status = 0;
-static flying_attitude_s flying_attitude;
-static uint64 fa_timestamp = 0;
+
 
 
 uint64 get_current_time()
 {
 	struct timeval tv;
 	gettimeofday(&tv, NULL);
-	return tv.tv_sec * 1000 + tv.tv_usec/1000;
+	return tv.tv_sec * 1000000 + tv.tv_usec;
 }
 
-flying_attitude_s *get_flying_attitude()
-{
-	return &flying_attitude;
-}
 
-void set_flying_attitude(uint8 *buf)
-{
-	flying_attitude_s *p;
-	uint8 data[GPS_FRAME_LEN-8];
-	p=&flying_attitude;
 
-	memcpy(data,buf+5,GPS_FRAME_LEN-8);//4bytes alignment of the data
 
-	p->roll=*((float *)data);
-	p->pitch=*((float *)(data+4));
-	p->yaw=*((float *)(data+8));
-	p->gx=*((float *)(data+12));
-	p->gy=*((float *)(data+16));
-	p->gz=*((float *)(data+20));
-	p->ax=*((float *)(data+24));
-	p->ay=*((float *)(data+28));
-	p->az=*((float *)(data+32));
-	p->g_time=*((unsigned int *)(data+36));
-	p->vn=*((int *)(data+40));
-	p->ve=*((int *)(data+44));
-	p->vd=*((int *)(data+48));
-	p->heading=*(( int *)(data+52));
-	p->b_h=*(( int *)(data+56));
-	p->lat=*((double *)(data+60));
-	p->Long=*((double *)(data+68));
-	p->g_h=*((double *)(data+76));
-	p->vx=*((float *)(data+84));
-	p->vy=*((float *)(data+88));
-	p->vz=*((float *)(data+92));
-	//memcpy(&flying_attitude, buf, sizeof(flying_attitude_s));
-	fa_timestamp = get_current_time();
-}
 
 void gps_time_update(uint32 g_time)
 {
@@ -109,10 +74,7 @@ void firmware_upgrade(uint8 *buf, uint32 size)
 	fp = NULL;
 }
 
-int flying_attitude_sensor_is_active()
-{
-	return (get_current_time() - fa_timestamp) <= CONTROL_DUTY;
-}
+
 
 
 void set_system_status(int status)
@@ -381,13 +343,12 @@ void fault_status_return(uint8 fault)
 	buf[14] = CTRL_FRAME_END;
 	control_cmd_send(buf, 15);
 }
-
+working_status_s working_status;
 void flying_status_return(int transmit_data)
 {
 	uint8 *fa = (uint8*)(get_flying_attitude());
-	uint8  buf[145];
+	uint8  buf[256];
 	uint16 crc_value;
-	uint8  rc_data[20];
 
 	buf[0] = CTRL_FRAME_START1;
 	buf[1] = CTRL_FRAME_START2;
@@ -404,13 +365,14 @@ void flying_status_return(int transmit_data)
 	memcpy(buf+11,fa,60);
 	memcpy(buf+71,fa+64,36);
 
-	*(uint32*)(buf+107)  = get_sonar_data();
+    sonar_data=get_sonar_data();
+	*(uint32*)(buf+107)  = sonar_data;
 
 	buf[111] = gepoint.id & 0xFF ;
 	buf[112] = gepoint.id >> 8 ;// next waypoint
 
+	read_rc_data(rc_data);
     if(get_flying_status() == AIRCRAFT_MANUAL_MODE){
-       read_rc_data((uint16*)rc_data);
        memcpy(buf+113,rc_data,14);
     }else
        memcpy(buf+113,(uint8 *)(&ppwm),20);//pwm output
@@ -421,18 +383,28 @@ void flying_status_return(int transmit_data)
     buf[135] = 0; // gps status
     buf[136] = 0; // imu status
     buf[137] = 0; // AP status :cpu1 or cpu2
-    buf[138] = get_input_voltage()&0xFF;//AP power
-    buf[139] = get_monitor_voltage()&0xFF;//UAV power
-    buf[140] = get_cpu_temperature()/1000;
+    working_status.input_voltage = get_input_voltage();
+    working_status.engine_voltage = get_monitor_voltage();
+    working_status.cpu_temprature = get_cpu_temperature();
+    buf[138] = working_status.input_voltage&0xFF;//AP power
+    buf[139] = working_status.engine_voltage&0xFF;//UAV power
+    buf[140] = working_status.cpu_temprature/1000;
     buf[141] = 0;
 
-	crc_value=crc_checksum16(buf, 142);
-	buf[142] = crc_value&0xFF;
-	buf[143] = crc_value>>8;
-	buf[144] = CTRL_FRAME_END;
-	fwrite(buf,145,1,fp_fly_status);
-	if(transmit_data)
-	   control_cmd_send(buf, 145);
+    if(transmit_data){
+	    crc_value=crc_checksum16(buf, 142);
+	    buf[142] = crc_value&0xFF;
+	    buf[143] = crc_value>>8;
+	    buf[144] = CTRL_FRAME_END;
+	    control_cmd_send(buf, 145);
+    }
+	*(uint16*)(buf+4) = 0xAF;
+	memcpy(buf+142,rc_data,14);
+	crc_value=crc_checksum16(buf, 172);
+	buf[172] = crc_value&0xFF;
+	buf[173] = crc_value>>8;
+	buf[174] = CTRL_FRAME_END;
+	fwrite(buf,175,1,fp_fly_status);
 }
 
 /*
@@ -570,42 +542,18 @@ void set_aircaft_preparing_status(unsigned char *buf)
 	memcpy((uint8*)(&aircraft_preparing_status), buf, sizeof(aircraft_preparing_status));
 	update_setting_status(&aircraft_preparing_status);
 }
-/*
-void aircraft_preparing_response()
-{
-    uint8  buf[23];
-    uint16 crc_value;
-    buf[0] = CTRL_FRAME_START1;
-    buf[1] = CTRL_FRAME_START2;
-    buf[2] = get_aircraft_no()&0xFF;
-    buf[3] = get_aircraft_no()>>8;
-    *(uint8*)(buf+4) = 23;
-    buf[8] = CTRL_FRAME_TYPE_AP_SET_ACK;
-    memcpy(buf+9,(uint8*)(&aircaft_preparing_status),sizeof(aircaft_preparing_status));
-    crc_value=crc_checksum16(buf, 20);
-    buf[20] = crc_value&0xFF;
-    buf[21] = crc_value>>8;
-    buf[22] = CTRL_FRAME_END;
 
-	control_cmd_send(buf, 23);
-	prepare_setting_is_ready = 1;
-}
-*/
-//static control_parameter_s control_parameter_remote1;
-//static control_parameter_s control_parameter_remote2;
-//static control_data_s control_data;
-static uint16 control_parameter_remote1[16];
-static uint16 control_parameter_remote2[16];
+
 static uint16 control_data[8];
 
 void update_control_parameter_remote1(uint8 *buf)
 {
-	memcpy(control_parameter_remote1, buf, sizeof(control_parameter_remote1));
+	memcpy(&K, buf, 32);
 }
 
 void update_control_parameter_remote2(uint8 *buf)
 {
-	memcpy(control_parameter_remote2, buf, sizeof(control_parameter_remote2));
+	memcpy(((uint8*)(&K))+32, buf, 32);
 }
 
 void update_control_data(uint8 *buf)
@@ -720,28 +668,27 @@ void data_export()
 		printf("no way point data\n");
 		return;
 	}
-
+	printf("------------------waypoint----------------------\n");
 	do{
        printf("%2d,%8f,%lf,%lf,%8f,%x,%x\n",wp->waypoint.id,wp->waypoint.v,wp->waypoint.lon,wp->waypoint.lat,wp->waypoint.h,wp->waypoint.task,wp->waypoint.task_para);
 	   wp = wp->next;
 	}while(wp!=NULL);
-	printf("heli config:");
-	printf("%d,%d,",aircraft_preparing_status.h_tp,aircraft_preparing_status.om);
-	printf("%d,%d,",aircraft_preparing_status.fc,aircraft_preparing_status.cp_tp);
-	printf("%d,%d,",aircraft_preparing_status.o_fp,aircraft_preparing_status.tg);
-	printf("%d,%d,",aircraft_preparing_status.max_v,aircraft_preparing_status.g_tp);
-	printf("%d,%d,",aircraft_preparing_status.radar,aircraft_preparing_status.reserved1);
-	printf("%d\n",aircraft_preparing_status.reserved2);
-    printf("flying para1:");
-	for(i=0;i<16;i++)
-    	printf("%d,",control_parameter_remote1[i]);
-	 printf("\n");
-	 printf("flying para2:");
-		for(i=0;i<16;i++)
-	    	printf("%d,",control_parameter_remote2[i]);
-		 printf("\n");
+	printf("------------------heli config----------------------\n");
+	printf("heli type:%4d ,oil_m  :%4d\n",aircraft_preparing_status.h_tp,aircraft_preparing_status.om);
+	printf("fuel_cons:%4d ,  cp_tp:%4d\n",aircraft_preparing_status.fc,gsfstate.CP_tp);
+	printf("servo_fre:%4d ,     tg:%4d\n",aircraft_preparing_status.o_fp,gsfstate.tg);
+	printf("    max_v:%4d , gps_tp:%4d\n",gsfstate.max_v,aircraft_preparing_status.g_tp);
+	printf("    radar:%4d ,   rsv1:%4d\n",gsfstate.radar,aircraft_preparing_status.reserved1);
+	printf("     rsv2:%4d\n",aircraft_preparing_status.reserved2);
+    printf("---------------flying parameter--------------------");
+	for(i=0;i<32;i++){
+		if((i%8)==0)
+	       printf("\n");
+    	printf("%d,",K.k[i]);
+	}
+	printf("\n");
 
-		 printf("joystick data:");
+		 printf("-----------------joystick data----------------------------\n");
 			for(i=0;i<8;i++)
 		    	printf("%d,",grm.c[i]);
 			 printf("\n");

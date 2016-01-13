@@ -32,10 +32,6 @@
 
 
 typedef struct aircraft_preparing_status_s {
-	//uint16 header; //0xaa55
-	//uint16 aircraft_no;
-	//uint32 frame_size;
-	//uint8 frame_type; //0x38
 	int8 h_tp;//0x1 0x2 0x4
 	int8 om;
 	int8 fc;
@@ -47,11 +43,9 @@ typedef struct aircraft_preparing_status_s {
 	int8 radar;
 	int8 reserved1;
 	int8 reserved2;
-	//uint16 crc;
-	//uint8 stop; //0x4e
 } aircraft_preparing_status_s;
 
-
+/*
 typedef struct control_parameter_s {
 	uint16 header; //0xaa55
 	uint16 aircraft_no;
@@ -81,7 +75,7 @@ typedef struct firmware_upgrade_s {
 	uint8 *data;
 	uint8 stop; //0x4e
 } firmware_upgrade_s;
-
+*/
 typedef struct waypoint_s {
 	uint16 id;
 	unsigned char task;
@@ -93,9 +87,6 @@ typedef struct waypoint_s {
 } waypoint_s;
 
 typedef struct flying_attitude_s {
-	//uint16 header; //0xff02
-	//uint8 command;
-	//uint16 size; //0x0060
 	float roll;
 	float pitch;
 	float yaw;
@@ -117,30 +108,7 @@ typedef struct flying_attitude_s {
 	float vx;
 	float vy;
 	float vz;
-
-	//uint16 crc;
-	//uint8 stop; //0x03
 } flying_attitude_s;
-
-typedef struct remote_control_s {
-	uint16 header; //0xaa55
-	uint16 aircraft_no;
-	uint32 frame_size;
-	uint8 frame_type; //0xd6
-	uint16 rm[8];
-	uint16 crc;
-	uint8 stop; //0x4e
-} remote_control_s;
-
-typedef struct link_testing_s {
-	uint16 header; //0x55aa
-	uint16 aircraft_no;
-	uint32 frame_size;
-	uint8 frame_type; //0x69
-	int8 count;
-	uint16 crc;
-	uint8 stop; //0x4e
-} link_testing_s;
 
 typedef struct flying_status_s {
 	uint16 header; //0x55aa
@@ -177,33 +145,23 @@ typedef struct flying_status_s {
 } flying_status_s;
 
 typedef struct working_status_s {
-	uint16 header; //0x55aa
-	uint16 aircraft_no;
-	uint32 frame_size;
-	uint8 frame_type; //0x55
+
 	int8 gps_status;
 	int8 flying_attitude;
 	int8 link_status;
-	int8 computer_status;
-	int8 battery_status;
-	int8 temp_volt;
-	int8 reserved[2];
-	uint16 crc;
-	uint8 stop; //0x4e
-} working_status_s;
+	int  engine_voltage;
+	int  input_voltage;
+	int  cpu_temprature;
 
+} working_status_s;
+/*
 typedef struct fault_status_s {
 	uint16 header; //0x55aa
 	uint16 aircraft_no;
 	uint32 frame_size;
 	uint8 frame_type; //0x38
 	uint16 fault;
-	/* 0x1 gps;
-	0x2 gps can't calculate;
-	0x4 master fault;
-	0x8 slaver fault;
-	0x10 aircraft fault1;
-	0x20 aircraft fault2 */
+
 	uint16 crc;
 	uint8 stop; //0x4e
 } fault_status_s;
@@ -284,6 +242,7 @@ typedef struct unregular_data_s {
 	uint16 crc;
 	uint8 stop; //0x4e
 } unregular_data_s;
+*/
 typedef struct waypoint_list_s waypoint_list_s;
 typedef struct waypoint_list_s {
 	waypoint_s waypoint;
@@ -349,15 +308,15 @@ void generate_file_name(char *name);
 
 
 
-int flying_attitude_sensor_is_active();
+
 void firmware_upgrade(uint8 *buf, uint32 size);
 uint16 get_aircraft_no();
 void set_flying_status(uint16 status);
 uint16 get_flying_status();
 void gps_time_update(uint32 g_time);
-void set_flying_attitude(uint8 *buf);
 
-flying_attitude_s *get_flying_attitude();
+
+
 uint64 get_current_time();
 
 

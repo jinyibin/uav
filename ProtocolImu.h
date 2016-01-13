@@ -25,5 +25,8 @@
 
 void gps_data_parse(unsigned char *buf, frame_info *frame_info);
 unsigned int serial_data_recv_gps(frame_info *frame_info,unsigned char *buf);
+void set_flying_attitude(uint8 *buf);
+int flying_attitude_sensor_is_active();
+flying_attitude_s *get_flying_attitude();
 
 #endif /* IMU_H_ */

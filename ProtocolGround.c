@@ -88,6 +88,7 @@ int control_data_parse(unsigned char *buf, frame_info *frame_info,frame_wait_con
 		        case CTRL_FRAME_TYPE_SERVO_TEST:
         	 	    if(get_flying_status() == AIRCRAFT_PREPARING){
         	 	   	    printf("servo testing...\n");
+        	 	   	    data_export();
         	 	   	    //servo_test_enable=1;
         	 	    }
         	 	    else {

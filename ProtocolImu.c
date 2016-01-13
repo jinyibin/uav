@@ -12,8 +12,10 @@
 #include "ComManage.h"
 #include "ProtocolImu.h"
 #include "fpga.h"
+#include "interface.h"
 
-
+static flying_attitude_s flying_attitude;
+static uint64 fa_timestamp = 0;
 
 void gps_data_parse(unsigned char *buf, frame_info *frame_info)
 {
@@ -22,6 +24,68 @@ void gps_data_parse(unsigned char *buf, frame_info *frame_info)
 	if (get_system_status() == SYS_INIT)
 		set_system_status(SYS_SENSOR_READY);
 
+}
+
+flying_attitude_s *get_flying_attitude()
+{
+	return &flying_attitude;
+}
+
+int flying_attitude_sensor_is_active()
+{
+	return (get_current_time() - fa_timestamp) <= CONTROL_PERIOD_US;
+}
+
+void set_flying_attitude(uint8 *buf)
+{
+	flying_attitude_s *p;
+	uint8 data[GPS_FRAME_LEN-8];
+	p=&flying_attitude;
+
+	memcpy(data,buf+5,GPS_FRAME_LEN-8);//4bytes alignment of the data
+
+	p->roll=*((float *)data);
+	p->pitch=*((float *)(data+4));
+	p->yaw=*((float *)(data+8));
+	p->gx=*((float *)(data+12));
+	p->gy=*((float *)(data+16));
+	p->gz=*((float *)(data+20));
+	p->ax=*((float *)(data+24));
+	p->ay=*((float *)(data+28));
+	p->az=*((float *)(data+32));
+	p->g_time=*((unsigned int *)(data+36));
+	p->vn=*((int *)(data+40));
+	p->ve=*((int *)(data+44));
+	p->vd=*((int *)(data+48));
+	p->heading=*(( int *)(data+52));
+	p->b_h=*(( int *)(data+56));
+	p->lat=*((double *)(data+60));
+	p->Long=*((double *)(data+68));
+	p->g_h=*((double *)(data+76));
+	p->vx=*((float *)(data+84));
+	p->vy=*((float *)(data+88));
+	p->vz=*((float *)(data+92));
+    gfstate.att[0]    = p->roll;
+    gfstate.att[1]    = p->pitch;
+    gfstate.att[2]    = p->yaw;
+    gfstate.att_v[0]  = p->gx;
+    gfstate.att_v[1]  = p->gy;
+    gfstate.att_v[2]  = p->gz;
+    gfstate.acc_xyz[0]= p->ax;
+    gfstate.acc_xyz[1]= p->ay;
+    gfstate.acc_xyz[2]= p->az;
+    gfstate.v_neu[0]  = p->vn;
+    gfstate.v_neu[1]  = p->ve;
+    gfstate.v_neu[2]  = p->vd;
+    gfstate.v_xyz[0]  = p->vx;
+    gfstate.v_xyz[1]  = p->vy;
+    gfstate.v_xyz[2]  = p->vz;
+    gfstate.posi[0]   = p->lat;
+    gfstate.posi[1]   = p->Long;
+    gfstate.posi[2]   = p->g_h;
+    gfstate.h[0]      = p->b_h;
+    gfstate.h[1]      = p->heading;
+	fa_timestamp = get_current_time();
 }
 
 /* serial_data_recv_gps()

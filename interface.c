@@ -6,6 +6,7 @@
 #include <unistd.h>
 #include "control.h"
 #include "interface.h"
+#include "ProtocolImu.h"
 
 
 
@@ -58,7 +59,7 @@ void update_joystick_data(uint16 *data)
 
 static pthread_t execute_pid;
 static int running = 1;
-static pthread_cond_t timer_cond;
+//static pthread_cond_t timer_cond;
 #define TIMER_CYCLE 20000 //20MS
 /*
 static void *auto_flying_execute()
@@ -104,8 +105,7 @@ extern uint32 command;
 extern uint32 counter_global;
 static void *auto_flying_execute()
 {
-	struct timeval tpStart,tpEnd;
-	float timeUse;
+
 	flying_attitude_s *fa;
 	uint64 current_ts, timer_ts;
 
@@ -117,7 +117,7 @@ static void *auto_flying_execute()
 			//printf("running control algorithm\n");
 			counter_global=0;
 		}else if(command==1){
-		// running in test mode
+		// running in test mode.
 			fa=get_flying_attitude();
 			fa->roll=0+((float)(counter_global%450)/3600)*(2*PI);
 			fa->pitch=0+((float)(counter_global%450)/3600)*(2*PI);
@@ -148,15 +148,10 @@ static void *auto_flying_execute()
 			ppwm.c[5]=4000+counter_global%1000;
 		}
 
-		gettimeofday(&tpStart, NULL);
-		timer_ts = tpStart.tv_sec * 1000000 + tpStart.tv_usec;
-		do {
-			 gettimeofday(&tpEnd, NULL);
-			 timeUse = 1000 * (tpEnd.tv_sec - tpStart.tv_sec) + 0.001 * (tpEnd.tv_usec - tpStart.tv_usec);
-		    } while(timeUse < 3);
+		timer_ts = get_current_time();
 
-		gettimeofday(&tpStart, NULL);
-		current_ts = tpStart.tv_sec * 1000000 + tpStart.tv_usec;
+
+		current_ts = get_current_time();
 		if ((current_ts - timer_ts) < TIMER_CYCLE)
 		    usleep(TIMER_CYCLE-(current_ts -timer_ts));
 		else

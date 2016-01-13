@@ -29,11 +29,10 @@ int main( int argc,char *argv[])
 	command = atol(argv[1]);
 	frequency = atol(argv[2]);
 
-    printf("version:20151211-1003\n");
+    printf("version:20160112-2037\n");
 
 	int ret = -1;
 	uint32 counter=0;
-	struct timeval tpStart,tpEnd;
 	uint64 start_time, stop_time;
 	while (ret < 0 ){
 		ret = poweron_self_check();
@@ -52,10 +51,10 @@ int main( int argc,char *argv[])
 	usleep(10000);
 	while (1) {
 
-		gettimeofday(&tpStart, NULL);
-		start_time = tpStart.tv_sec * 1000000 + tpStart.tv_usec;
 
-        if((frequency%CONTROL_PERIOD_MS)==0)
+		start_time = get_current_time();
+
+        if(((counter*CONTROL_PERIOD_MS)%frequency)==0)
 		   flying_status_return(1);
         else
            flying_status_return(0);
@@ -72,8 +71,8 @@ int main( int argc,char *argv[])
 		    }
 		}
 
-	    gettimeofday(&tpStart, NULL);
-		stop_time = tpStart.tv_sec * 1000000 + tpStart.tv_usec;
+
+		stop_time = get_current_time();
 		if ((stop_time  - start_time) < CONTROL_PERIOD_US) {//save data every 20ms
 			usleep(CONTROL_PERIOD_US-(stop_time  - start_time));
 		} else {

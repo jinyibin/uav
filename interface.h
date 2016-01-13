@@ -18,6 +18,7 @@ struct fstate {
 struct rm {
 	uint16 c[8];//Should be u16
 };
+uint16 rc_data[7];
 
 struct sstate {
 char CP_tp;
@@ -80,7 +81,7 @@ struct sstate gsfstate; //setting status
 
 //struct wstate gwstate; //work status
 
-static struct spoint gspoint; //start flying point
+struct spoint gspoint; //start flying point
 struct epoint gepoint; //end flying point
 
 struct parameter K;//parameter of controller setting by base-station  //2015-11-15 王强新增
@@ -88,6 +89,8 @@ struct parameter K;//parameter of controller setting by base-station  //2015-11-
 struct pwm ppwm; //PWM output
 
 int route_n;//Flying line number
+uint16 operation_time;
+uint16 sonar_data;
 
 struct lfstate glfstate; //flying status used last time
 
