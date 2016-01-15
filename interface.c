@@ -150,7 +150,6 @@ static void *auto_flying_execute()
 
 		timer_ts = get_current_time();
 
-
 		current_ts = get_current_time();
 		if ((current_ts - timer_ts) < TIMER_CYCLE)
 		    usleep(TIMER_CYCLE-(current_ts -timer_ts));

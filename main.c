@@ -29,7 +29,7 @@ int main( int argc,char *argv[])
 	command = atol(argv[1]);
 	frequency = atol(argv[2]);
 
-    printf("version:20160112-2037\n");
+    printf("version:20160115-0927\n");
 
 	int ret = -1;
 	uint32 counter=0;
@@ -37,16 +37,12 @@ int main( int argc,char *argv[])
 	while (ret < 0 ){
 		ret = poweron_self_check();
 	}
+
 	while (get_flying_status() < AIRCRAFT_READY) {
-		usleep(500000);
+		usleep(20000);
 		flying_status_return(1);
 	}
-	/*
-	while (get_flying_status() < AIRCRAFT_TAKEOFF) {
-		flying_status_return();
-		usleep(40000);
-	}
-	*/
+
 	auto_flying_start();
 	usleep(10000);
 	while (1) {
@@ -66,7 +62,7 @@ int main( int argc,char *argv[])
 			fclose(fp_fly_status);
 			memset(log_file_name,sizeof(log_file_name),0);
 			generate_file_name(log_file_name);
-		    if((fp_fly_status=fopen(log_file_name,"wb+"))==NULL){
+		    if((fp_fly_status=fopen(log_file_name,"wb"))==NULL){
 		      printf("can not open file:%s\n",log_file_name);
 		    }
 		}

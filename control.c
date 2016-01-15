@@ -37,8 +37,48 @@ uint64 get_current_time()
 	return tv.tv_sec * 1000000 + tv.tv_usec;
 }
 
+static void heli_configuration_init()
+{
+    FILE *fp_heli_config;
+    uint32 buf[11];
+    int i;
+	if((fp_heli_config=fopen(HELI_CONFIGURATION,"r"))==NULL){
+      printf("can not open heli configuration file\n");
+      return ;
+    }
+    for(i=0;i<11;i++){
+        if(fscanf(fp_heli_config,"%u,",buf+i)==EOF){
+        	print_err("heli configuration file error\n");
+        	fclose(fp_heli_config);
+        	return;
+        }
+    }
+    fclose(fp_heli_config);
+    for(i=0;i<11;i++)
+    	*((uint8*)(&aircraft_preparing_status)+i)=(uint8)(buf[i]&0xff);
+	update_setting_status(&aircraft_preparing_status);
+}
+static void control_parameter_init()
+{
+    FILE *fp_control_para;
+    uint32 buf[32];
+    int i;
+	if((fp_control_para=fopen(CONTROL_PARAMETER,"r"))==NULL){
+      printf("can not open control parameter file\n");
+      return ;
+    }
+    for(i=0;i<32;i++){
+        if(fscanf(fp_control_para,"%u,",buf+i)==EOF){
+        	print_err("control parameter file error\n");
+        	fclose(fp_control_para);
+        	return;
+        }
 
-
+    }
+    fclose(fp_control_para);
+    for(i=0;i<32;i++)
+    	K.k[i]=buf[i];
+}
 
 
 void gps_time_update(uint32 g_time)
@@ -438,8 +478,7 @@ int poweron_self_check()
 	int ret = -1;
 	int timeout = 0;
 
-
-
+    //--------------spi initial------------------
 	ret=spi_open();
 #ifndef debug
 	if(ret<0)
@@ -452,6 +491,7 @@ int poweron_self_check()
 		fault_status_return(ret);
 #endif
 */
+	//---------------imu initial-----------------
 	ret = sensor_open();
 #ifndef debug
 	if (ret < 0) {
@@ -504,43 +544,66 @@ int poweron_self_check()
     if((fp_fly_status=fopen(log_file_name,"wb+"))==NULL){
       printf("can not open file:%s\n",log_file_name);
     }
+    heli_configuration_init();
+    control_parameter_init();
+    set_servo_pwm_period(3031);
+
+    servo_test_enable=0;
 
 	while (1) {
-		flying_status_return(1);
-		usleep(500000); //500ms
+		if(get_system_status() < SYS_PREPARE_STEERING_TEST){
+		    flying_status_return(1);
+		    usleep(500000);
+		}else if(get_system_status() == SYS_PREPARE_STEERING_TEST){
+        	steering_test();
+        	usleep(20000);
+		}else if(get_system_status() == SYS_PREPARE_TAKEOFF){
+			return 0;
+		}
+
+		/*
 		if (get_system_status() >= SYS_PREPARE_SETTING) {
 			print_debug("Link is ready\n");
 			return 0;
 		}
-		//link_testing_send();
-		//usleep(20000); //20ms
+		link_testing_send();
+		usleep(20000); //20ms
+		*/
 	}
 exit:
 	sensor_close();
 	return ret;	
 }
 
-static int servo_test_enable=0;
-static int servo_test_cnt=0;
+
 void steering_test()
 {
-   servo_test_cnt++;
-   if(servo_test_enable){
-	   if(servo_test_cnt==1){
-
-	   }else if(servo_test_cnt==3){
-
-	   }
-
-
-   }
+    if(fread(&ppwm,20,1,fp_servo_test)==0){
+        servo_test_enable=0;
+        set_system_status(SYS_PREPARE_TAKEOFF);
+        fclose(fp_servo_test);
+        printf("servo test over\n");
+    }else{
+        write_pwm_data((uint16*)&ppwm);
+    }
 
 }
 
 void set_aircaft_preparing_status(unsigned char *buf)
 {
-	memcpy((uint8*)(&aircraft_preparing_status), buf, sizeof(aircraft_preparing_status));
+    FILE *fp;
+    int i;
+
+    memcpy((uint8*)(&aircraft_preparing_status), buf, sizeof(aircraft_preparing_status));
 	update_setting_status(&aircraft_preparing_status);
+
+	if((fp=fopen(HELI_CONFIGURATION,"w+"))==NULL){
+      printf("can not open heli configuration file\n");
+      return ;
+    }
+    for(i=0;i<11;i++)
+        fprintf(fp,"%u,",*(((uint8*)&aircraft_preparing_status)+i));
+    fclose(fp);
 }
 
 
@@ -548,12 +611,32 @@ static uint16 control_data[8];
 
 void update_control_parameter_remote1(uint8 *buf)
 {
+    FILE *fp;
+    int i;
 	memcpy(&K, buf, 32);
+
+	if((fp=fopen(CONTROL_PARAMETER,"w+"))==NULL){
+      printf("can not open control parameter file\n");
+      return ;
+    }
+    for(i=0;i<32;i++)
+        fprintf(fp,"%u,",(uint32)K.k[i]);
+    fclose(fp);
 }
 
 void update_control_parameter_remote2(uint8 *buf)
 {
-	memcpy(((uint8*)(&K))+32, buf, 32);
+    FILE *fp;
+    int i;
+	memcpy((uint8*)(&K)+32, buf, 32);
+
+	if((fp=fopen(CONTROL_PARAMETER,"w+"))==NULL){
+      printf("can not open control parameter file\n");
+      return ;
+    }
+    for(i=0;i<32;i++)
+        fprintf(fp,"%u,",(uint32)K.k[i]);
+    fclose(fp);
 }
 
 void update_control_data(uint8 *buf)

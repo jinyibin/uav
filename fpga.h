@@ -95,4 +95,5 @@ uint32 get_fpga_version();
 uint16  get_sonar_data();
 int set_control_register(int mask_bit);
 int reset_control_register(int mask_bit);
+void set_servo_pwm_period(uint16 data);
 #endif

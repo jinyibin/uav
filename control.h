@@ -30,17 +30,22 @@
 #define CTRL_FRAME_CRC_FAILED -11
 #define GPS_FRAME_CRC_FAILED -12
 
+#define SERVO_TEST_DATA "/home/parameter/servo_test.raw"
+#define HELI_CONFIGURATION "/home/parameter/heli_configuration.csv"
+#define CONTROL_PARAMETER "/home/parameter/control_parameter.csv"
 
 typedef struct aircraft_preparing_status_s {
-	int8 h_tp;//0x1 0x2 0x4
-	int8 om;
-	int8 fc;
-	int8 cp_tp;
-	int8 o_fp;
-	int8 tg;
+	int8 h_tp;  /*0x1:electric
+	              0x2:gas
+	              0x4:methanol */
+	int8 om;    // fuel volume
+	int8 fc;    // fuel mileage
+	int8 cp_tp; // swashplate type  0x01:normal  0x02:triangle 0x04:cross
+	int8 o_fp;  // servo frequency
+	int8 tg;    // tail gyro  0x00: yes 0xff:no
 	int8 max_v;
-	int8 g_tp;
-	int8 radar;
+	int8 g_tp;  //gps type 0xff:differential 0x00:no
+	int8 radar; //0x00:radar 0xff:no radar
 	int8 reserved1;
 	int8 reserved2;
 } aircraft_preparing_status_s;
@@ -265,8 +270,9 @@ enum SYSTEM_STATUS {
 	SYS_PREPARE_TAKEOFF,
 };
 
-FILE *fp_fly_status;
+FILE *fp_fly_status,*fp_servo_test;
 char log_file_name[50];
+uint32 servo_test_enable;
 //FILE *fp_way_point;
 
 

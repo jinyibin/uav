@@ -391,3 +391,7 @@ int reset_control_register(int mask_bit)
    ret=spi_write_one_word(SPI_WRITE_CONTROL_REG,data);
    return ret;
 }
+void set_servo_pwm_period(uint16 data)
+{
+	spi_write_one_word(SPI_WRITE_PWM_PERIOD,data);
+}

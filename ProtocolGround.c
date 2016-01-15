@@ -87,9 +87,14 @@ int control_data_parse(unsigned char *buf, frame_info *frame_info,frame_wait_con
 	        switch (frame_wait_confirm->type) {
 		        case CTRL_FRAME_TYPE_SERVO_TEST:
         	 	    if(get_flying_status() == AIRCRAFT_PREPARING){
-        	 	   	    printf("servo testing...\n");
+
         	 	   	    data_export();
-        	 	   	    //servo_test_enable=1;
+        	 	   	    printf("servo testing...\n");
+        	 	        if((fp_servo_test=fopen(SERVO_TEST_DATA,"rb"))==NULL)
+        	 	             printf("can not open servo test data\n");
+
+        	 	   	    servo_test_enable=1;
+        	 	   	    set_system_status(SYS_PREPARE_STEERING_TEST);
         	 	    }
         	 	    else {
         	 		    print_err("can not test rotar now %d\n", get_flying_status());
