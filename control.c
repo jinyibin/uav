@@ -28,7 +28,7 @@ static waypoint_list_s *waypoint_list_current = NULL;
 
 static uint16 flying_status = 0;
 
-
+extern uint32 debug_enable;
 
 uint64 get_current_time()
 {
@@ -57,6 +57,23 @@ static void heli_configuration_init()
     for(i=0;i<11;i++)
     	*((uint8*)(&aircraft_preparing_status)+i)=(uint8)(buf[i]&0xff);
 	update_setting_status(&aircraft_preparing_status);
+
+    switch(aircraft_preparing_status.o_fp){
+    case SERVO_PWM_PERIOD_20:
+    	set_servo_pwm_period(20000);
+    	break;
+    case SERVO_PWM_PERIOD_14:
+    	set_servo_pwm_period(14000);
+    	break;
+    case SERVO_PWM_PERIOD_7:
+        set_servo_pwm_period(7000);
+        break;
+    case SERVO_PWM_PERIOD_3:
+        set_servo_pwm_period(3031);
+        break;
+    default:
+    	break;
+    }
 }
 static void control_parameter_init()
 {
@@ -271,6 +288,13 @@ waypoint_list_s *get_waypoint_tail()
 	return waypoint_list_tail;
 }
 
+void set_current_waypoint(int input)
+{
+
+	if(input == 0)
+		waypoint_list_current = waypoint_list_head;
+        //printf("%x %x %x \n",waypoint_list_current->waypoint.id,waypoint_list_head->waypoint.id,waypoint_list_tail->waypoint.id);
+}
 
 waypoint_list_s *get_waypoint_previous()
 {
@@ -440,6 +464,8 @@ void flying_status_return(int transmit_data)
     }
 	*(uint16*)(buf+4) = 0xAF;
 	memcpy(buf+142,rc_data,14);
+	*(uint16*)(buf+156)=time_estimation.data_return;
+	*(uint16*)(buf+158)=time_estimation.algorithm;
 	crc_value=crc_checksum16(buf, 172);
 	buf[172] = crc_value&0xFF;
 	buf[173] = crc_value>>8;
@@ -546,7 +572,6 @@ int poweron_self_check()
     }
     heli_configuration_init();
     control_parameter_init();
-    set_servo_pwm_period(3031);
 
     servo_test_enable=0;
 
@@ -604,6 +629,31 @@ void set_aircaft_preparing_status(unsigned char *buf)
     for(i=0;i<11;i++)
         fprintf(fp,"%u,",*(((uint8*)&aircraft_preparing_status)+i));
     fclose(fp);
+
+    switch(aircraft_preparing_status.o_fp){
+        case SERVO_PWM_PERIOD_20:
+        	set_servo_pwm_period(20000);
+        	break;
+        case SERVO_PWM_PERIOD_14:
+        	set_servo_pwm_period(14000);
+        	break;
+        case SERVO_PWM_PERIOD_7:
+            set_servo_pwm_period(7000);
+            break;
+        case SERVO_PWM_PERIOD_3:
+            set_servo_pwm_period(3031);
+            break;
+        default:
+        	break;
+        }
+
+	printf("------------------heli config----------------------\n");
+	printf("heli type:%4d ,oil_m  :%4d\n",aircraft_preparing_status.h_tp,aircraft_preparing_status.om);
+	printf("fuel_cons:%4d ,  cp_tp:%4d\n",aircraft_preparing_status.fc,gsfstate.CP_tp);
+	printf("servo_fre:%4d ,     tg:%4d\n",aircraft_preparing_status.o_fp,gsfstate.tg);
+	printf("    max_v:%4d , gps_tp:%4d\n",gsfstate.max_v,aircraft_preparing_status.g_tp);
+	printf("    radar:%4d ,   rsv1:%4d\n",gsfstate.radar,aircraft_preparing_status.reserved1);
+	printf("     rsv2:%4d\n",aircraft_preparing_status.reserved2);
 }
 
 
@@ -622,6 +672,14 @@ void update_control_parameter_remote1(uint8 *buf)
     for(i=0;i<32;i++)
         fprintf(fp,"%u,",(uint32)K.k[i]);
     fclose(fp);
+
+    printf("---------------flying parameter--------------------");
+	for(i=0;i<32;i++){
+		if((i%8)==0)
+	       printf("\n");
+    	printf("%d,",K.k[i]);
+	}
+	printf("\n");
 }
 
 void update_control_parameter_remote2(uint8 *buf)
@@ -637,6 +695,14 @@ void update_control_parameter_remote2(uint8 *buf)
     for(i=0;i<32;i++)
         fprintf(fp,"%u,",(uint32)K.k[i]);
     fclose(fp);
+
+    printf("---------------flying parameter--------------------");
+	for(i=0;i<32;i++){
+		if((i%8)==0)
+	       printf("\n");
+    	printf("%d,",K.k[i]);
+	}
+	printf("\n");
 }
 
 void update_control_data(uint8 *buf)
@@ -673,6 +739,9 @@ void update_control_data(uint8 *buf)
 	buf[frame_size-2] = crc_value>>8;
 	buf[frame_size-1] = CTRL_FRAME_END;
 	control_cmd_send(buf, frame_size);
+	if(debug_enable)
+	   printf("control_cmd_response_recv-----type:%x------\n",data[10]);
+
 }
 
  /* control_cmd_response_exe()
@@ -699,6 +768,8 @@ void update_control_data(uint8 *buf)
  	buf[13] = crc_value>>8;
  	buf[14] = CTRL_FRAME_END;
  	control_cmd_send(buf, 15);
+ 	if(debug_enable)
+ 	    printf("control_cmd_response_exe----type:%x-------\n",data);
  }
 
 
@@ -756,13 +827,6 @@ void data_export()
        printf("%2d,%8f,%lf,%lf,%8f,%x,%x\n",wp->waypoint.id,wp->waypoint.v,wp->waypoint.lon,wp->waypoint.lat,wp->waypoint.h,wp->waypoint.task,wp->waypoint.task_para);
 	   wp = wp->next;
 	}while(wp!=NULL);
-	printf("------------------heli config----------------------\n");
-	printf("heli type:%4d ,oil_m  :%4d\n",aircraft_preparing_status.h_tp,aircraft_preparing_status.om);
-	printf("fuel_cons:%4d ,  cp_tp:%4d\n",aircraft_preparing_status.fc,gsfstate.CP_tp);
-	printf("servo_fre:%4d ,     tg:%4d\n",aircraft_preparing_status.o_fp,gsfstate.tg);
-	printf("    max_v:%4d , gps_tp:%4d\n",gsfstate.max_v,aircraft_preparing_status.g_tp);
-	printf("    radar:%4d ,   rsv1:%4d\n",gsfstate.radar,aircraft_preparing_status.reserved1);
-	printf("     rsv2:%4d\n",aircraft_preparing_status.reserved2);
     printf("---------------flying parameter--------------------");
 	for(i=0;i<32;i++){
 		if((i%8)==0)
@@ -770,6 +834,7 @@ void data_export()
     	printf("%d,",K.k[i]);
 	}
 	printf("\n");
+
 
 		 printf("-----------------joystick data----------------------------\n");
 			for(i=0;i<8;i++)

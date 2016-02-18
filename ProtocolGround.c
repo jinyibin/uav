@@ -19,6 +19,9 @@
 #include "ComManage.h"
 #include "ProtocolImu.h"
 #include "ProtocolGround.h"
+#include "interface.h"
+
+extern uint32 debug_enable;
 
 /* control_data_parse()
  * process the control frame received
@@ -169,6 +172,11 @@ int control_data_parse(unsigned char *buf, frame_info *frame_info,frame_wait_con
         	 	    }
         	 		         break;
 		        case CTRL_FRAME_TYPE_RESET:
+    	 		    set_flying_status(AIRCRAFT_PREPARING);
+    	 		    //switch pwm output to aoto mode
+    	 		    cmd_exe_err=reset_control_register(CTRL_REG_MASK_MANUAL);
+
+		        	/*
         	 	    if(get_flying_status() & RESET_VALID){
         	 		    set_flying_status(AIRCRAFT_PREPARING);
         	 		    //switch pwm output to aoto mode
@@ -178,13 +186,18 @@ int control_data_parse(unsigned char *buf, frame_info *frame_info,frame_wait_con
        	 		         print_err("can not switch to reset mode now %d\n", get_flying_status());
              	 		    cmd_exe_err = INVALID_CMD;
         	 	    }
+        	 	    */
         	 		         break;
 		        case CTRL_FRAME_TYPE_GROUND_OK:
+
         	 	    if(get_flying_status() == AIRCRAFT_PREPARING) {
-        	 		    set_system_status(SYS_PREPARE_TAKEOFF);
-		        		set_flying_status(AIRCRAFT_READY);
+        	 	    	if(waypoint_check()==TRUE){
+        	 		        set_system_status(SYS_PREPARE_TAKEOFF);
+		        		    set_flying_status(AIRCRAFT_READY);
+        	 	    	}else
+        	 	    		cmd_exe_err = NO_WAYPOINT;
         	 	    } else {
-        	 		    print_err("can not export data now %d\n", get_flying_status());
+        	 		    print_err("can not switch to ground ok now %d\n", get_flying_status());
              	 		cmd_exe_err = INVALID_CMD;
         	 	    }
 		                break;
@@ -335,7 +348,8 @@ unsigned int serial_data_recv_ctrl(frame_info *frame_info ,unsigned char *buf)
             	     if(frame_crc==crc_checksum16(buf, frame_info->frame_size-3)){
             	     //if(1){
             		    // we have a valid CRC
-            	    	 //print_debug("ctrl :valid crc\n");
+            	         if(debug_enable)
+            	    	     print_debug("valid ctrl frame received,frame type:%x \n",buf[CTRL_FRAME_MASK_FRAME_TYPE]);
 
             		     return frame_info->frame_size;
             	     }else{

@@ -7,6 +7,7 @@
 #include "control.h"
 #include "interface.h"
 #include "ProtocolImu.h"
+#include "ac.h"
 
 
 
@@ -15,23 +16,34 @@
 void get_flyling_line_point(int forward)
 {
 	waypoint_list_s *wp = get_waypoint_current();
+	/*
+	if(wp==NULL){
+		printf("get_flying_line_point:please make sure waypoint have been uploaded \n");
+		return;
+	}
+*/
 	if (forward == 1) {
 		if (get_flying_status() <= AIRCRAFT_TAKEOFF) {
 			memcpy(&gspoint, &wp->waypoint, sizeof(gspoint));
 			memcpy(&gepoint, &wp->waypoint, sizeof(gepoint));
-		} else if (wp == get_waypoint_tail() || get_flying_status() == AIRCRAFT_RETURN){
+		} else if (wp == get_waypoint_tail()){
 			memcpy(&gspoint, &wp->waypoint, sizeof(gspoint));
 			wp = get_waypoint_head();
 			memcpy(&gepoint, &wp->waypoint, sizeof(gepoint));
-		} else if (get_flying_status() == AIRCRAFT_LANDING){
+
+			set_flying_status(AIRCRAFT_RETURN)  ;
+			set_current_waypoint(0);//set current waypoint as head;
+
+		} else if (get_flying_status() == AIRCRAFT_RETURN){
 			memcpy(&gspoint, &wp->waypoint, sizeof(gspoint));
 			memcpy(&gepoint, &wp->waypoint, sizeof(gepoint));
 		} else {
 			memcpy(&gspoint, &wp->waypoint, sizeof(gspoint));
 			wp = get_waypoint_next();
 			memcpy(&gepoint, &wp->waypoint, sizeof(gepoint));
+
 		}
-	} else if (forward == -1) {
+	}else if (forward == -1) {
 		if (wp == get_waypoint_head() || get_flying_status() == AIRCRAFT_LANDING) {
 			memcpy(&gspoint, &wp->waypoint, sizeof(gspoint));
 			memcpy(&gepoint, &wp->waypoint, sizeof(gepoint));
@@ -43,6 +55,16 @@ void get_flyling_line_point(int forward)
 	}
 }
 
+int waypoint_check()
+{
+	waypoint_list_s *wp = get_waypoint_current();
+
+	if(wp==NULL){
+		printf("no waypoint,please make sure waypoint have been uploaded \n");
+		return 0;
+	}else
+		return 1;
+}
 
 void update_setting_status(aircraft_preparing_status_s *aps)
 {
@@ -149,10 +171,11 @@ static void *auto_flying_execute()
 		}
 
 		timer_ts = get_current_time();
-
+        negative();
 		current_ts = get_current_time();
-		if ((current_ts - timer_ts) < TIMER_CYCLE)
-		    usleep(TIMER_CYCLE-(current_ts -timer_ts));
+		time_estimation.algorithm=current_ts - timer_ts;
+		if (time_estimation.algorithm < TIMER_CYCLE)
+		    usleep(TIMER_CYCLE-time_estimation.algorithm);
 		else
 			print_err("Thread cost too much time\n");
 

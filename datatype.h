@@ -19,6 +19,8 @@ typedef unsigned long long uint64;
 #define PI 3.1415926
 
 #define debug
+#define TRUE 1
+#define FAULSE 0
 
 
 

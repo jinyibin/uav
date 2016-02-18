@@ -20,6 +20,7 @@ struct rm {
 };
 uint16 rc_data[7];
 
+
 struct sstate {
 char CP_tp;
 char tg;
@@ -97,6 +98,7 @@ struct lfstate glfstate; //flying status used last time
 void auto_flying_start();
 void auto_flying_stop();
 void get_flyling_line_point(int forward);
+int waypoint_check();
 
 void update_setting_status( aircraft_preparing_status_s  *aps);
 void update_joystick_data(uint16 *data);

@@ -14,6 +14,7 @@
 #define INVALID_CMD 30
 #define CMD_TYPE_MISMATCH 31
 #define UNSUPPORTED_CMD 32
+#define NO_WAYPOINT 33
 #define SERIAL_NO_DATA 40
 
 #define SPI_OPEN_FAILED    -2
@@ -270,6 +271,11 @@ enum SYSTEM_STATUS {
 	SYS_PREPARE_TAKEOFF,
 };
 
+struct time_estimation
+{
+    uint32 data_return;
+    uint32 algorithm;
+}time_estimation;
 FILE *fp_fly_status,*fp_servo_test;
 char log_file_name[50];
 uint32 servo_test_enable;
@@ -288,6 +294,7 @@ waypoint_list_s *get_waypoint_tail();
 waypoint_list_s *get_waypoint_previous();
 waypoint_list_s *get_waypoint_next();
 waypoint_list_s *get_waypoint_current();
+void set_current_waypoint(int input);
 void waypoint_init(frame_wait_confirm *frame_wait_confirm);
 
 void link_test(uint8 *data);
