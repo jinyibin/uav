@@ -35,24 +35,25 @@ int main( int argc,char *argv[])
 	debug_enable=atol(argv[3]);
 	test_airline=atol(argv[4]);
 
+	printf("----------------------------------------------------------------\n");
+    printf("Firmware is running in ");
 	switch(command){
 	case 0:printf("normal mode\n");break;
 	case 1:printf("test mode\n");break;
 	case 2:printf("manual mode\n");break;
-	default:printf("mode error %d\n",command);break;
+	default:printf("error mode %d\n",command);break;
 	}
 	switch(debug_enable){
-	case 0:printf("debug disable\n");break;
-	case 1:printf("debug enable\n");break;
-	default:printf("debug mode error %d\n",debug_enable);break;
+	case 0:printf("Debug information print disabled\n");break;
+	case 1:printf("Debug information print enabled\n");break;
+	default:printf("Debug information print set error %d\n",debug_enable);break;
 	}
 
 	if(test_airline==1)
-		printf("test airline\n");
-	printf("flying data gap:%d\n",frequency);
+		printf("Testing airline switch\n");
+	printf("Flying data is downloaded every %d ms.\n",frequency);
+    printf("Firmware build version:%s-%s\n",__DATE__,__TIME__);
 
-
-    printf("build version:%s-%s\n",__DATE__,__TIME__);
 
 	int ret = -1;
 	uint32 counter=0;
@@ -62,7 +63,7 @@ int main( int argc,char *argv[])
 	}
 
 	while (get_flying_status() < AIRCRAFT_READY) {
-		usleep(20000);
+		usleep(500000);
 		flying_status_return(1);
 	}
 

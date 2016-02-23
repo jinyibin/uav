@@ -13,6 +13,7 @@
 #include <time.h>
 #include "ComManage.h"
 #include "ProtocolImu.h"
+#include "PressureSensor.h"
 
 static int system_status = 0;
 static int waypoint_is_ready = 0;
@@ -413,6 +414,7 @@ void flying_status_return(int transmit_data)
 	uint8 *fa = (uint8*)(get_flying_attitude());
 	uint8  buf[256];
 	uint16 crc_value;
+	int pressure;
 
 	buf[0] = CTRL_FRAME_START1;
 	buf[1] = CTRL_FRAME_START2;
@@ -464,8 +466,11 @@ void flying_status_return(int transmit_data)
     }
 	*(uint16*)(buf+4) = 0xAF;
 	memcpy(buf+142,rc_data,14);
-	*(uint16*)(buf+156)=time_estimation.data_return;
-	*(uint16*)(buf+158)=time_estimation.algorithm;
+	pressure = get_altimeter();
+	*(uint16*)(buf+154)= pressure>>16;
+	*(uint16*)(buf+156)= pressure&0xffff;
+	*(uint16*)(buf+158)=time_estimation.data_return;
+	*(uint16*)(buf+160)=time_estimation.algorithm;
 	crc_value=crc_checksum16(buf, 172);
 	buf[172] = crc_value&0xFF;
 	buf[173] = crc_value>>8;
@@ -506,6 +511,8 @@ int poweron_self_check()
 
     //--------------spi initial------------------
 	ret=spi_open();
+    printf("CPLD   logic   version:%d\n",get_fpga_version());
+    printf("----------------------------------------------------------------\n");
 #ifndef debug
 	if(ret<0)
 		fault_status_return(ret);
@@ -524,7 +531,7 @@ int poweron_self_check()
 		fault_status_return(ret);
 	}
 #endif
-
+	pressure_sensor_init();
 	set_flying_status(AIRCRAFT_PREPARING);
 	if(command==0){
 	//UAV is working in normal mode
@@ -835,6 +842,13 @@ void data_export()
 	}
 	printf("\n");
 
+	printf("------------------heli config----------------------\n");
+		printf("heli type:%4d ,oil_m  :%4d\n",aircraft_preparing_status.h_tp,aircraft_preparing_status.om);
+		printf("fuel_cons:%4d ,  cp_tp:%4d\n",aircraft_preparing_status.fc,gsfstate.CP_tp);
+		printf("servo_fre:%4d ,     tg:%4d\n",aircraft_preparing_status.o_fp,gsfstate.tg);
+		printf("    max_v:%4d , gps_tp:%4d\n",gsfstate.max_v,aircraft_preparing_status.g_tp);
+		printf("    radar:%4d ,   rsv1:%4d\n",gsfstate.radar,aircraft_preparing_status.reserved1);
+		printf("     rsv2:%4d\n",aircraft_preparing_status.reserved2);
 
 		 printf("-----------------joystick data----------------------------\n");
 			for(i=0;i<8;i++)
