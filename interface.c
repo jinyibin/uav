@@ -16,6 +16,7 @@
 void get_flyling_line_point(int forward)
 {
 	waypoint_list_s *wp = get_waypoint_current();
+	flying_attitude_s *fa = get_flying_attitude();
 	/*
 	if(wp==NULL){
 		printf("get_flying_line_point:please make sure waypoint have been uploaded \n");
@@ -24,8 +25,20 @@ void get_flyling_line_point(int forward)
 */
 	if (forward == 1) {
 		if (get_flying_status() <= AIRCRAFT_TAKEOFF) {
+			/*
 			memcpy(&gspoint, &wp->waypoint, sizeof(gspoint));
 			memcpy(&gepoint, &wp->waypoint, sizeof(gepoint));
+			*/
+			//set current position as takeoff position
+            gspoint.id=0;
+            gspoint.task=0;
+            gspoint.task_para=0;
+            gspoint.lat = fa->lat;
+            gspoint.lon= fa->Long;
+            gspoint.h= fa->g_h;
+            gspoint.v= 0;
+            memcpy(&gepoint, &gspoint, sizeof(gepoint));
+
 		} else if (wp == get_waypoint_tail()){
 			memcpy(&gspoint, &wp->waypoint, sizeof(gspoint));
 			wp = get_waypoint_head();
