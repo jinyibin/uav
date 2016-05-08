@@ -156,6 +156,7 @@ static int waypoint_list_add(uint8 *waypoint)
 	}
 	//memcpy(&(wp_list->waypoint), waypoint, sizeof(waypoint_s));
 	wp_list->waypoint.id = *(uint16*)(waypoint);
+	wp_list->waypoint.id ++ ;//way point from ground start from 0 which is the second waypoint,not current wp
 	wp_list->waypoint.task = *(waypoint+2);
 	wp_list->waypoint.task_para = *(waypoint+3);
 	wp_list->waypoint.v = *(float*)(waypoint+4);
@@ -183,12 +184,33 @@ static void waypoint_list_clear()
 {
 	waypoint_list_s *wp = waypoint_list_head;
 	waypoint_list_s *p = wp;
+	waypoint_list_s *wp_list = NULL;
+	flying_attitude_s *fa = get_flying_attitude();
 	while(wp) {
 		p = wp;
 		wp = wp->next;
 		free(p);
 	}
 	waypoint_list_head = waypoint_list_current = waypoint_list_tail = NULL;
+
+	//set current positon as waypoint 0
+	wp_list = malloc(sizeof(waypoint_list_s));
+	if (wp_list == NULL) {
+			print_err("malloc failed\n");
+			return ;
+	}
+	wp_list->waypoint.id = 0;
+	wp_list->waypoint.task = 0;
+	wp_list->waypoint.task_para = 0;
+	wp_list->waypoint.v = 0;
+	wp_list->waypoint.lon = fa->Long;
+	wp_list->waypoint.lat = fa->lat;
+	wp_list->waypoint.h = fa->g_h;
+
+	waypoint_list_head = waypoint_list_tail = wp_list;
+	wp_list->prev = NULL;
+	wp_list->next = NULL;
+
 }
 
 int waypoint_delete (uint8 *waypoint, int no)
@@ -317,6 +339,7 @@ int inflight_waypoint_modify(frame_wait_confirm *frame_wait_confirm)
     uint16 waypoint_id;
     int ret = -1;
     waypoint_id = frame_wait_confirm->data[CTRL_FRAME_MASK_WP_ID+1] << 8| frame_wait_confirm->data[CTRL_FRAME_MASK_WP_ID];
+    waypoint_id ++; //way point from ground start from 0 which is the second waypoint,not current wp
  	if (frame_wait_confirm->data[0] == WAYPOINT_INSERT)
  		ret=waypoint_insert(frame_wait_confirm->data + CTRL_FRAME_MASK_WP_ID, waypoint_id);
  	else if (frame_wait_confirm->data[0] == WAYPOINT_MODIFY)
