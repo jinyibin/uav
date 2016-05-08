@@ -16,7 +16,7 @@
 void get_flyling_line_point(int forward)
 {
 	waypoint_list_s *wp = get_waypoint_current();
-	//flying_attitude_s *fa = get_flying_attitude();
+	flying_attitude_s *fa = get_flying_attitude();
 	/*
 	if(wp==NULL){
 		printf("get_flying_line_point:please make sure waypoint have been uploaded \n");
@@ -28,6 +28,7 @@ void get_flyling_line_point(int forward)
 
 			memcpy(&gspoint, &wp->waypoint, sizeof(gspoint));
 			memcpy(&gepoint, &wp->waypoint, sizeof(gepoint));
+			take_off_heading = fa->yaw;
 			/*
 			//set current position as takeoff position
             gspoint.id=0;
@@ -37,7 +38,7 @@ void get_flyling_line_point(int forward)
             gspoint.lon= fa->Long;
             gspoint.h= fa->g_h;
             gspoint.v= 0;
-            take_off_heading = fa->heading;
+
             memcpy(&gepoint, &gspoint, sizeof(gepoint));
             */
 

@@ -84,7 +84,7 @@ struct sstate gsfstate; //setting status
 
 struct spoint gspoint; //start flying point
 struct epoint gepoint; //end flying point
-int    take_off_heading;
+float    take_off_heading;
 
 struct parameter K;//parameter of controller setting by base-station  //2015-11-15 王强新增
 
