@@ -26,10 +26,10 @@ void get_flyling_line_point(int forward)
 	if (forward == 1) {
 		if (get_flying_status() <= AIRCRAFT_TAKEOFF) {
 
-			memcpy(&gspoint, &wp->waypoint, sizeof(gspoint));
-			memcpy(&gepoint, &wp->waypoint, sizeof(gepoint));
+			//memcpy(&gspoint, &wp->waypoint, sizeof(gspoint));
+			//memcpy(&gepoint, &wp->waypoint, sizeof(gepoint));
 			take_off_heading = fa->yaw;
-			/*
+
 			//set current position as takeoff position
             gspoint.id=0;
             gspoint.task=0;
@@ -40,7 +40,7 @@ void get_flyling_line_point(int forward)
             gspoint.v= 0;
 
             memcpy(&gepoint, &gspoint, sizeof(gepoint));
-            */
+
 
 		} else if (wp == get_waypoint_tail()){
 			memcpy(&gspoint, &wp->waypoint, sizeof(gspoint));
@@ -68,7 +68,8 @@ void get_flyling_line_point(int forward)
 			wp = get_waypoint_previous();
 			memcpy(&gepoint, &wp->waypoint, sizeof(gepoint));
 		}
-	}
+	}else
+		take_off_heading = fa->yaw;
 }
 
 int waypoint_check()

@@ -79,14 +79,14 @@ static void heli_configuration_init()
 static void control_parameter_init()
 {
     FILE *fp_control_para;
-    uint32 buf[32];
+    int buf[32];
     int i;
 	if((fp_control_para=fopen(CONTROL_PARAMETER,"r"))==NULL){
       printf("can not open control parameter file\n");
       return ;
     }
     for(i=0;i<32;i++){
-        if(fscanf(fp_control_para,"%u,",buf+i)==EOF){
+        if(fscanf(fp_control_para,"%d,",buf+i)==EOF){
         	print_err("control parameter file error\n");
         	fclose(fp_control_para);
         	return;
@@ -700,7 +700,7 @@ void update_control_parameter_remote1(uint8 *buf)
       return ;
     }
     for(i=0;i<32;i++)
-        fprintf(fp,"%u,",(uint32)K.k[i]);
+        fprintf(fp,"%d,",(int)K.k[i]);
     fclose(fp);
 
     printf("---------------flying parameter--------------------");
@@ -723,7 +723,7 @@ void update_control_parameter_remote2(uint8 *buf)
       return ;
     }
     for(i=0;i<32;i++)
-        fprintf(fp,"%u,",(uint32)K.k[i]);
+        fprintf(fp,"%d,",(int)K.k[i]);
     fclose(fp);
 
     printf("---------------flying parameter--------------------");
