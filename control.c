@@ -364,6 +364,8 @@ void waypoint_init(frame_wait_confirm *frame_wait_confirm)
 	// if this is the first frame of way point packet, free the way point list in the memory
 	if(frame_wait_confirm->frame_id == 1){
 	   waypoint_list_clear();
+	   waypoint_info.total_num = 0;
+	   waypoint_info.received_num = 0;
 	   // extract total number of way point
 	   waypoint_info.total_num = waypoint_total_num;
 	}

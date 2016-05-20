@@ -68,8 +68,8 @@ void get_flyling_line_point(int forward)
 			wp = get_waypoint_previous();
 			memcpy(&gepoint, &wp->waypoint, sizeof(gepoint));
 		}
-	}else
-		take_off_heading = fa->yaw;
+	}
+
 }
 
 int waypoint_check()
