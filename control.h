@@ -103,6 +103,7 @@ typedef struct flying_attitude_s {
 	float ay;
 	float az;
 	uint32 g_time;
+	uint32 status;
 	int vn;
 	int ve;
 	int vd;
@@ -114,6 +115,17 @@ typedef struct flying_attitude_s {
 	float vx;
 	float vy;
 	float vz;
+	float accuracy_atti;
+	float accuracy_pos;
+	float accuracy_vel;
+	uint8  year;
+	uint8  month;
+	uint8  day;
+	uint8  hour;
+	uint8  min;
+	uint8  sec;
+	uint32 nano_sec;
+
 } flying_attitude_s;
 
 typedef struct flying_status_s {

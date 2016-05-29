@@ -436,7 +436,7 @@ void fault_status_return(uint8 fault)
 working_status_s working_status;
 void flying_status_return(int transmit_data)
 {
-	uint8 *fa = (uint8*)(get_flying_attitude());
+	flying_attitude_s *fa = get_flying_attitude();
 	uint8  buf[256];
 	uint16 crc_value;
 	int pressure;
@@ -451,10 +451,30 @@ void flying_status_return(int transmit_data)
 	buf[8] = 1;
 	buf[9] = 0;
 	buf[10] = CTRL_FRAME_TYPE_FLY_STATUS;
-	// compiler add 4bytes between float data and double data for flying_attitude struct
-	// so we have to copy separately
-	memcpy(buf+11,fa,60);
-	memcpy(buf+71,fa+64,36);
+
+
+
+	*((float *)(buf+11))=fa->roll;
+	*((float *)(buf+15))=fa->pitch;
+	*((float *)(buf+19))=fa->yaw;
+	*((float *)(buf+23))=fa->gx;
+	*((float *)(buf+27))=fa->gy;
+	*((float *)(buf+31))=fa->gz;
+	*((float *)(buf+35)) =fa->ax;
+	*((float *)(buf+39))=fa->ay;
+	*((float *)(buf+43))=fa->az;
+	*((uint32 *)(buf+47))=fa->g_time;
+	*((int *)(buf+51))=fa->vn;
+	*((int *)(buf+55))=fa->ve;
+	*((int *)(buf+59))=fa->vd;
+    *(( int *)(buf+63))=fa->heading;
+	*(( int *)(buf+67))=fa->b_h;
+	*((double *)(buf+71))=fa->lat;
+	*((double *)(buf+79))=fa->Long;
+	*((double *)(buf+87))=fa->g_h;
+	*((float *)(buf+95))=fa->vx;
+	*((float *)(buf+99))=fa->vy;
+	*((float *)(buf+103))=fa->vz;
 
     sonar_data=get_sonar_data();
 	*(uint32*)(buf+107)  = sonar_data;
@@ -533,6 +553,8 @@ int poweron_self_check()
 {
 	int ret = -1;
 	int timeout = 0;
+	char set_system_time[50];
+	flying_attitude_s *p;
 
     //--------------spi initial------------------
 	ret=spi_open();
@@ -576,6 +598,11 @@ int poweron_self_check()
 		    goto exit;
 	    }
 	    print_debug("Flying attitude sensor is active\n");
+        p=get_flying_attitude();
+        //printf("system beijing time %d-%d-%d,%d:%d:%d\n",p->year,p->month,p->day,p->hour+8,p->min,p->sec);
+        sprintf(set_system_time,"date -s \"%d-%d-%d %d:%d:%d\"",p->year+2000,p->month,p->day,p->hour+8,p->min,p->sec);
+        //printf("%s\n",set_system_time);
+        system(set_system_time);
 
 	}else if(command==1){
 	//UAV is working in test mode
