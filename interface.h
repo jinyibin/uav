@@ -58,7 +58,7 @@ struct epoint {
 };
 
 struct pwm {
-	uint16 c[9];
+	uint16 c[10];
 };
 
 

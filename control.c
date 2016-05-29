@@ -488,6 +488,7 @@ void flying_status_return(int transmit_data)
     }else
        memcpy(buf+113,(uint8 *)(&ppwm),20);//pwm output
 
+    *(uint16*)(buf+131)  = ppwm.c[9];
     buf[133] = get_flying_status()&0xFF;
     buf[134] = get_flying_status()>>8;
 
