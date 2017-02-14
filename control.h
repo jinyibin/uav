@@ -318,6 +318,8 @@ void set_aircaft_preparing_status(unsigned char *buf);
 void aircraft_preparing_response();
 void update_control_parameter_remote1(uint8 *buf);
 void update_control_parameter_remote2(uint8 *buf);
+void update_control_parameter_remote3(uint8 *buf);
+void update_control_parameter_remote4(uint8 *buf);
 void update_control_data(uint8 *buf);
 
 void control_cmd_confirm();

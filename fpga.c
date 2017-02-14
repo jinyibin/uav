@@ -218,7 +218,7 @@ int write_pwm_data(uint16 *data)
 	uint16 *d;
 	uint8 i;
 
-	spi_tr.len = 48;
+	spi_tr.len = 64;
 	p=(uint16*)spi_tx;
 	d=(uint16*)spi_rx;
 	// write data
@@ -234,28 +234,36 @@ int write_pwm_data(uint16 *data)
      *(p+9)  = data[4];
      *(p+10) = SPI_WRITE_PWM_CH6;
      *(p+11) = data[5];
+     *(p+12) = SPI_WRITE_PWM_CH7;
+     *(p+13) = data[6];
+     *(p+14) = SPI_WRITE_PWM_CH8;
+     *(p+15) = data[7];
     // send read command to read back the data for checking
-     *(p+12) = SPI_READ_PWM_CH1;
-     *(p+13) = 0;
-     *(p+14) = SPI_READ_PWM_CH2;
-     *(p+15) = 0;
-     *(p+16) = SPI_READ_PWM_CH3;
+     *(p+16) = SPI_READ_PWM_CH1;
      *(p+17) = 0;
-     *(p+18) = SPI_READ_PWM_CH4;
+     *(p+18) = SPI_READ_PWM_CH2;
      *(p+19) = 0;
-     *(p+20) = SPI_READ_PWM_CH5;
+     *(p+20) = SPI_READ_PWM_CH3;
      *(p+21) = 0;
-     *(p+22) = SPI_READ_PWM_CH6;
+     *(p+22) = SPI_READ_PWM_CH4;
      *(p+23) = 0;
+     *(p+24) = SPI_READ_PWM_CH5;
+     *(p+25) = 0;
+     *(p+26) = SPI_READ_PWM_CH6;
+     *(p+27) = 0;
+     *(p+28) = SPI_READ_PWM_CH7;
+     *(p+29) = 0;
+     *(p+30) = SPI_READ_PWM_CH8;
+     *(p+31) = 0;
  	ret = ioctl(spi_fd, SPI_IOC_MESSAGE(1), &spi_tr);
 	if (ret < 1){
 		print_err("can't send pwm data\n");
 	    return -1;
 	}
 	// compare the data read back with the original data
-	for(i=1;i<12;i=i+2){
+	for(i=1;i<16;i=i+2){
 		//print_debug("%4x --- %4x \n",p[i],d[i+12]);
-       if(p[i] != d[i+12]){
+       if(p[i] != d[i+16]){
 #ifdef debug
     	   print_err("pwm write error \n");
 #else

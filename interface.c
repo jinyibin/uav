@@ -8,6 +8,7 @@
 #include "interface.h"
 #include "ProtocolImu.h"
 #include "ac.h"
+#include "fpga.h"
 
 
 
@@ -188,7 +189,31 @@ static void *auto_flying_execute()
 		}
 
 		timer_ts = get_current_time();
+#ifdef HELI
         negative();
+#endif
+
+#ifdef MULTIROTOR_8
+
+        //for test only,run in extreme low speed
+        if(rc_data[2]<1170){//read remote pitch data
+           ppwm.c[0]=rc_data[2];
+           ppwm.c[1]=rc_data[2];
+           ppwm.c[2]=rc_data[2];
+           ppwm.c[3]=rc_data[2];
+           ppwm.c[4]=rc_data[2];
+           ppwm.c[5]=rc_data[2];
+           ppwm.c[6]=rc_data[2];
+           ppwm.c[7]=rc_data[2];
+           ppwm.c[8]=rc_data[2];
+        }
+        write_pwm_data((uint16*)&ppwm);
+
+#endif
+
+#ifdef MULTIROTOR_6
+
+#endif
 		current_ts = get_current_time();
 		time_estimation.algorithm=current_ts - timer_ts;
 		if (time_estimation.algorithm < TIMER_CYCLE)

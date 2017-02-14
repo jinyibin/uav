@@ -47,7 +47,7 @@
 #define  SPI_WRITE_PWM_CH7_PERIOD    0x0020  //  pwm period of channel7
 #define  SPI_WRITE_PWM_CH7           0x0021  //  pwm width of channel 7
 #define  SPI_WRITE_PWM_CH8_PERIOD    0x0022  //  pwm period of channel8
-#define  SPI_WRITE_PWM_CH9           0x0023  //  pwm width of channel 8
+#define  SPI_WRITE_PWM_CH8           0x0023  //  pwm width of channel 8
 
 /* SPI read command */
 #define  SPI_READ_BOARD_ID         0xC001    // read board id
@@ -80,7 +80,7 @@
 #define  SPI_READ_PWM_CH7_PERIOD    0xC020  // read pwm period of channel7
 #define  SPI_READ_PWM_CH7           0xC021  // read pwm width of channel 7
 #define  SPI_READ_PWM_CH8_PERIOD    0xC022  // read pwm period of channel8
-#define  SPI_READ_PWM_CH9           0xC023  // read pwm width of channel 8
+#define  SPI_READ_PWM_CH8           0xC023  // read pwm width of channel 8
 
 
 int read_rc_data(uint16 *data);

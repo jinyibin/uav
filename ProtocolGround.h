@@ -40,6 +40,8 @@
 #define CTRL_FRAME_TYPE_WAYPOINT_MODIFY  0x8B        // modify way point
 #define CTRL_FRAME_TYPE_FLY_PARA1        0x33        // set flying parameter1
 #define CTRL_FRAME_TYPE_FLY_PARA2        0x3E        // set flying parameter2
+#define CTRL_FRAME_TYPE_FLY_PARA3        0x35        // set flying parameter3
+#define CTRL_FRAME_TYPE_FLY_PARA4        0x36        // set flying parameter4
 #define CTRL_FRAME_TYPE_FIRM_UPDATE      0xFF        // update firmware
 #define CTRL_FRAME_TYPE_WAYPOINT_INIT     0x8A        // initialize waypoint
 #define CTRL_FRAME_TYPE_SERVO_TEST       0x0C        // tell AP to test servos

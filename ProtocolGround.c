@@ -52,6 +52,8 @@ int control_data_parse(unsigned char *buf, frame_info *frame_info,frame_wait_con
 	       (frame_type==CTRL_FRAME_TYPE_EXPORT_DATA) ||
 	       (frame_type==CTRL_FRAME_TYPE_FLY_PARA1)   ||
 	       (frame_type==CTRL_FRAME_TYPE_FLY_PARA2)   ||
+	       (frame_type==CTRL_FRAME_TYPE_FLY_PARA3)   ||
+	       (frame_type==CTRL_FRAME_TYPE_FLY_PARA4)   ||
 	       (frame_type==CTRL_FRAME_TYPE_HELI_CONFIG) ||
 	       (frame_type==CTRL_FRAME_TYPE_WAYPOINT_MODIFY)||
 	       (frame_type==CTRL_FRAME_TYPE_WAYPOINT_INIT)    ||
@@ -220,6 +222,22 @@ int control_data_parse(unsigned char *buf, frame_info *frame_info,frame_wait_con
 		        case CTRL_FRAME_TYPE_FLY_PARA2:
         	 	    if(get_flying_status() == AIRCRAFT_PREPARING)
         	 		     update_control_parameter_remote2(frame_wait_confirm->data);
+        	 	    else {
+       	 		        print_err("can not set fly para now %d\n", get_flying_status());
+        	 		    cmd_exe_err = INVALID_CMD;
+        	 	    }
+		        	    break;
+		        case CTRL_FRAME_TYPE_FLY_PARA3:
+	        	 	    if(get_flying_status() == AIRCRAFT_PREPARING)
+	        	 		     update_control_parameter_remote3(frame_wait_confirm->data);
+	        	 	    else {
+        	 		        print_err("can not set fly para now %d\n", get_flying_status());
+            	 		    cmd_exe_err = INVALID_CMD;
+	        	 	    }
+		            	 break;
+		        case CTRL_FRAME_TYPE_FLY_PARA4:
+        	 	    if(get_flying_status() == AIRCRAFT_PREPARING)
+        	 		     update_control_parameter_remote4(frame_wait_confirm->data);
         	 	    else {
        	 		        print_err("can not set fly para now %d\n", get_flying_status());
         	 		    cmd_exe_err = INVALID_CMD;

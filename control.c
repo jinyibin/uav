@@ -8,6 +8,7 @@
 #include "fpga.h"
 #include "adc.h"
 #include "control.h"
+#include "ac.h"
 #include "serial.h"
 #include <sys/time.h>
 #include <time.h>
@@ -30,6 +31,7 @@ static waypoint_list_s *waypoint_list_current = NULL;
 static uint16 flying_status = 0;
 
 extern uint32 debug_enable;
+extern int sonar_kf;
 
 uint64 get_current_time()
 {
@@ -79,13 +81,13 @@ static void heli_configuration_init()
 static void control_parameter_init()
 {
     FILE *fp_control_para;
-    int buf[32];
+    int buf[64];
     int i;
 	if((fp_control_para=fopen(CONTROL_PARAMETER,"r"))==NULL){
       printf("can not open control parameter file\n");
       return ;
     }
-    for(i=0;i<32;i++){
+    for(i=0;i<64;i++){
         if(fscanf(fp_control_para,"%d,",buf+i)==EOF){
         	print_err("control parameter file error\n");
         	fclose(fp_control_para);
@@ -94,7 +96,7 @@ static void control_parameter_init()
 
     }
     fclose(fp_control_para);
-    for(i=0;i<32;i++)
+    for(i=0;i<64;i++)
     	K.k[i]=buf[i];
 }
 
@@ -476,8 +478,9 @@ void flying_status_return(int transmit_data)
 	*((float *)(buf+99))=fa->vy;
 	*((float *)(buf+103))=fa->vz;
 
-    sonar_data=get_sonar_data();
-	*(uint32*)(buf+107)  = sonar_data;
+    //sonar_data=get_sonar_data();
+	//*(uint32*)(buf+107)  = sonar_data;
+	*(uint32*)(buf+107)  = (uint32)sonar_kf;
 
 	buf[111] = gepoint.id & 0xFF ;
 	buf[112] = gepoint.id >> 8 ;// next waypoint
@@ -488,7 +491,6 @@ void flying_status_return(int transmit_data)
     }else
        memcpy(buf+113,(uint8 *)(&ppwm),20);//pwm output
 
-    *(uint16*)(buf+131)  = ppwm.c[9];
     buf[133] = get_flying_status()&0xFF;
     buf[134] = get_flying_status()>>8;
 
@@ -729,12 +731,12 @@ void update_control_parameter_remote1(uint8 *buf)
       printf("can not open control parameter file\n");
       return ;
     }
-    for(i=0;i<32;i++)
+    for(i=0;i<64;i++)
         fprintf(fp,"%d,",(int)K.k[i]);
     fclose(fp);
 
     printf("---------------flying parameter--------------------");
-	for(i=0;i<32;i++){
+	for(i=0;i<64;i++){
 		if((i%8)==0)
 	       printf("\n");
     	printf("%d,",K.k[i]);
@@ -752,12 +754,58 @@ void update_control_parameter_remote2(uint8 *buf)
       printf("can not open control parameter file\n");
       return ;
     }
-    for(i=0;i<32;i++)
+    for(i=0;i<64;i++)
         fprintf(fp,"%d,",(int)K.k[i]);
     fclose(fp);
 
     printf("---------------flying parameter--------------------");
-	for(i=0;i<32;i++){
+	for(i=0;i<64;i++){
+		if((i%8)==0)
+	       printf("\n");
+    	printf("%d,",K.k[i]);
+	}
+	printf("\n");
+}
+
+void update_control_parameter_remote3(uint8 *buf)
+{
+    FILE *fp;
+    int i;
+	memcpy((uint8*)(&K)+64, buf, 32);
+
+	if((fp=fopen(CONTROL_PARAMETER,"w+"))==NULL){
+      printf("can not open control parameter file\n");
+      return ;
+    }
+    for(i=0;i<64;i++)
+        fprintf(fp,"%d,",(int)K.k[i]);
+    fclose(fp);
+
+    printf("---------------flying parameter--------------------");
+	for(i=0;i<64;i++){
+		if((i%8)==0)
+	       printf("\n");
+    	printf("%d,",K.k[i]);
+	}
+	printf("\n");
+}
+
+void update_control_parameter_remote4(uint8 *buf)
+{
+    FILE *fp;
+    int i;
+	memcpy((uint8*)(&K)+96, buf, 32);
+
+	if((fp=fopen(CONTROL_PARAMETER,"w+"))==NULL){
+      printf("can not open control parameter file\n");
+      return ;
+    }
+    for(i=0;i<64;i++)
+        fprintf(fp,"%d,",(int)K.k[i]);
+    fclose(fp);
+
+    printf("---------------flying parameter--------------------");
+	for(i=0;i<64;i++){
 		if((i%8)==0)
 	       printf("\n");
     	printf("%d,",K.k[i]);

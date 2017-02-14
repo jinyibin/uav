@@ -21,6 +21,9 @@ typedef unsigned long long uint64;
 #define debug
 #define TRUE 1
 #define FAULSE 0
+//#define HELI
+#define MULTIROTOR_8
+//#define MULTIROTOR_6
 
 
 

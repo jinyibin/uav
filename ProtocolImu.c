@@ -113,6 +113,7 @@ unsigned int serial_data_recv_gps(frame_info *frame_info,unsigned char *buf)
 	  unsigned int i=0;
 	  unsigned int frame_head_found=0;
 	  unsigned int frame_crc;
+	  unsigned int m=0;
 
   	// make sure buf never will be overflowed
     nread=read(gps_fd,buf+frame_info->bytes_received,BUF_SIZE_GPS-frame_info->bytes_received);
@@ -168,16 +169,20 @@ unsigned int serial_data_recv_gps(frame_info *frame_info,unsigned char *buf)
           		      return frame_info->frame_size;
           	       }else{
                       // invalid CRC ,remove the whole frame from the buffer
-
+#ifdef debug
+          		      print_debug("gps crc error,%d\n",frame_info->frame_size);
+          		      //for(m=0;m<frame_info->frame_size;){
+          		      //  print_debug(" %2x %2x %2x %2x %2x %2x %2x %2x  \n",buf[m],buf[m+1],buf[m+2],buf[m+3],buf[m+4],buf[m+5],buf[m+6],buf[m+7]);
+                      //  m=m+8;
+          		     // }
+#else
+          		      fault_status_response(GPS_FRAME_CRC_FAILED);
+#endif
           		      memmove(buf,buf+frame_info->frame_size,frame_info->bytes_received-frame_info->frame_size);
           	    	  frame_info->bytes_received -=frame_info->frame_size;
           	    	  frame_info->frame_size = 0;
           		      frame_head_found = 0;
-#ifdef debug
-          		      print_debug("gps crc error\n");
-#else
-          		      fault_status_response(GPS_FRAME_CRC_FAILED);
-#endif
+
           	       }
 
                }else{
