@@ -195,6 +195,8 @@ static void *auto_flying_execute()
 
 #ifdef MULTIROTOR_8
 
+        negative();
+        /*
         //for test only,run in extreme low speed
         if(rc_data[2]<1170){//read remote pitch data
            ppwm.c[0]=rc_data[2];
@@ -208,6 +210,7 @@ static void *auto_flying_execute()
            ppwm.c[8]=rc_data[2];
         }
         write_pwm_data((uint16*)&ppwm);
+        */
 
 #endif
 

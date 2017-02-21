@@ -30,7 +30,7 @@ static waypoint_list_s *waypoint_list_current = NULL;
 
 static uint16 flying_status = 0;
 
-extern uint32 debug_enable;
+
 extern int sonar_kf;
 
 uint64 get_current_time()
@@ -81,14 +81,14 @@ static void heli_configuration_init()
 static void control_parameter_init()
 {
     FILE *fp_control_para;
-    int buf[64];
+    float buf[64];
     int i;
 	if((fp_control_para=fopen(CONTROL_PARAMETER,"r"))==NULL){
       printf("can not open control parameter file\n");
       return ;
     }
     for(i=0;i<64;i++){
-        if(fscanf(fp_control_para,"%d,",buf+i)==EOF){
+        if(fscanf(fp_control_para,"%f,",buf+i)==EOF){
         	print_err("control parameter file error\n");
         	fclose(fp_control_para);
         	return;
@@ -725,21 +725,31 @@ void update_control_parameter_remote1(uint8 *buf)
 {
     FILE *fp;
     int i;
-	memcpy(&K, buf, 32);
+    int16 buffer_k[16];
+	memcpy(buffer_k, buf, 32);
+
+	for(i=0;i<16;i++){
+#ifdef HELI
+		K.k[i]=(float)buffer_k[i];
+#endif
+#ifdef MULTIROTOR_8
+		K.k[i]=((float)buffer_k[i])/10;
+#endif
+	}
 
 	if((fp=fopen(CONTROL_PARAMETER,"w+"))==NULL){
       printf("can not open control parameter file\n");
       return ;
     }
     for(i=0;i<64;i++)
-        fprintf(fp,"%d,",(int)K.k[i]);
+        fprintf(fp,"%.1f,",K.k[i]);
     fclose(fp);
 
     printf("---------------flying parameter--------------------");
 	for(i=0;i<64;i++){
 		if((i%8)==0)
 	       printf("\n");
-    	printf("%d,",K.k[i]);
+    	printf("%.1f,",K.k[i]);
 	}
 	printf("\n");
 }
@@ -748,21 +758,31 @@ void update_control_parameter_remote2(uint8 *buf)
 {
     FILE *fp;
     int i;
-	memcpy((uint8*)(&K)+32, buf, 32);
+    int16 buffer_k[16];
+	memcpy(buffer_k, buf, 32);
+
+	for(i=0;i<16;i++){
+#ifdef HELI
+		K.k[i+16]=(float)buffer_k[i];
+#endif
+#ifdef MULTIROTOR_8
+		K.k[i+16]=((float)buffer_k[i])/10;
+#endif
+	}
 
 	if((fp=fopen(CONTROL_PARAMETER,"w+"))==NULL){
       printf("can not open control parameter file\n");
       return ;
     }
     for(i=0;i<64;i++)
-        fprintf(fp,"%d,",(int)K.k[i]);
+        fprintf(fp,"%.1f,",K.k[i]);
     fclose(fp);
 
     printf("---------------flying parameter--------------------");
 	for(i=0;i<64;i++){
 		if((i%8)==0)
 	       printf("\n");
-    	printf("%d,",K.k[i]);
+    	printf("%.1f,",K.k[i]);
 	}
 	printf("\n");
 }
@@ -771,21 +791,31 @@ void update_control_parameter_remote3(uint8 *buf)
 {
     FILE *fp;
     int i;
-	memcpy((uint8*)(&K)+64, buf, 32);
+    int16 buffer_k[16];
+	memcpy(buffer_k, buf, 32);
+
+	for(i=0;i<16;i++){
+#ifdef HELI
+		K.k[i+32]=(float)buffer_k[i];
+#endif
+#ifdef MULTIROTOR_8
+		K.k[i+32]=((float)buffer_k[i])/10;
+#endif
+	}
 
 	if((fp=fopen(CONTROL_PARAMETER,"w+"))==NULL){
       printf("can not open control parameter file\n");
       return ;
     }
     for(i=0;i<64;i++)
-        fprintf(fp,"%d,",(int)K.k[i]);
+        fprintf(fp,"%.1f,",K.k[i]);
     fclose(fp);
 
     printf("---------------flying parameter--------------------");
 	for(i=0;i<64;i++){
 		if((i%8)==0)
 	       printf("\n");
-    	printf("%d,",K.k[i]);
+    	printf("%.1f,",K.k[i]);
 	}
 	printf("\n");
 }
@@ -794,21 +824,31 @@ void update_control_parameter_remote4(uint8 *buf)
 {
     FILE *fp;
     int i;
-	memcpy((uint8*)(&K)+96, buf, 32);
+    int16 buffer_k[16];
+	memcpy(buffer_k, buf, 32);
+
+	for(i=0;i<16;i++){
+#ifdef HELI
+		K.k[i+48]=(float)buffer_k[i];
+#endif
+#ifdef MULTIROTOR_8
+		K.k[i+48]=((float)buffer_k[i])/10;
+#endif
+	}
 
 	if((fp=fopen(CONTROL_PARAMETER,"w+"))==NULL){
       printf("can not open control parameter file\n");
       return ;
     }
     for(i=0;i<64;i++)
-        fprintf(fp,"%d,",(int)K.k[i]);
+        fprintf(fp,"%.1f,",K.k[i]);
     fclose(fp);
 
     printf("---------------flying parameter--------------------");
 	for(i=0;i<64;i++){
 		if((i%8)==0)
 	       printf("\n");
-    	printf("%d,",K.k[i]);
+    	printf("%.1f,",K.k[i]);
 	}
 	printf("\n");
 }

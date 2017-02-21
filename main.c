@@ -11,12 +11,8 @@
 #include <unistd.h>
 #include <sys/time.h>
 /*-----------------------------------------------------------------------*/
-    uint32 command;
-    uint32 frequency;
-    uint32 counter_global=0;
-    uint32 debug_enable=0;
-    uint32 test_airline=0;
 
+    uint32 counter_global=0;
 int main( int argc,char *argv[])
 {
 
@@ -38,15 +34,15 @@ int main( int argc,char *argv[])
 	printf("----------------------------------------------------------------\n");
     printf("Firmware is running in ");
 	switch(command){
-	case 0:printf("normal mode\n");break;
-	case 1:printf("test mode\n");break;
-	case 2:printf("manual mode\n");break;
+	case 0:printf("normal mode:%d\n",command);break;
+	case 1:printf("test mode:%d\n",command);break;
+	case 2:printf("manual mode:%d\n",command);break;
 	default:printf("error mode %d\n",command);break;
 	}
 	switch(debug_enable){
-	case 0:printf("Debug information print disabled\n");break;
-	case 1:printf("Debug information print enabled\n");break;
-	default:printf("Debug information print set error %d\n",debug_enable);break;
+	case 0:printf("Debug information print disabled:%x\n",debug_enable);break;
+	case 1:printf("Debug information print enabled:%x\n",debug_enable);break;
+	default:printf("Debug information print set error %x\n",debug_enable);break;
 	}
 
 	if(test_airline==1)

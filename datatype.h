@@ -26,7 +26,11 @@ typedef unsigned long long uint64;
 //#define MULTIROTOR_6
 
 
+uint32 command;
+uint32 frequency;
 
+uint32  debug_enable;
+uint32 test_airline;
 
 #endif
 

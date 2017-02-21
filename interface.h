@@ -73,7 +73,7 @@ struct lfstate {
 };
 
 struct parameter {      //2015-11-15 王强新增
-	int16 k[64];
+	float k[64];
 };
 
 struct fstate gfstate; //flying status
