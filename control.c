@@ -478,9 +478,9 @@ void flying_status_return(int transmit_data)
 	*((float *)(buf+99))=fa->vy;
 	*((float *)(buf+103))=fa->vz;
 
-    //sonar_data=get_sonar_data();
-	//*(uint32*)(buf+107)  = sonar_data;
-	*(uint32*)(buf+107)  = (uint32)sonar_kf;
+    sonar_data=get_sonar_data();
+	*(uint32*)(buf+107)  = sonar_data;
+	//*(uint32*)(buf+107)  = (uint32)sonar_kf;
 
 	buf[111] = gepoint.id & 0xFF ;
 	buf[112] = gepoint.id >> 8 ;// next waypoint

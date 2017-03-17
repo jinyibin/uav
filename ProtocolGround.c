@@ -21,7 +21,7 @@
 #include "ProtocolGround.h"
 #include "interface.h"
 
-extern uint32 debug_enable;
+
 
 /* control_data_parse()
  * process the control frame received
