@@ -740,7 +740,7 @@ void update_control_parameter_remote1(uint8 *buf)
 		K.k[i]=(float)buffer_k[i];
 #endif
 #ifdef MULTIROTOR_8
-		K.k[i]=((float)buffer_k[i])/10;
+		K.k[i]=((float)buffer_k[i])/20;
 #endif
 	}
 
@@ -752,7 +752,7 @@ void update_control_parameter_remote1(uint8 *buf)
         fprintf(fp,"%.1f,",K.k[i]);
     fclose(fp);
 
-    printf("---------------flying parameter--------------------");
+    printf("----%s-%s-----------uploading flying parameter1--------------------",__DATE__,__TIME__);
 	for(i=0;i<64;i++){
 		if((i%8)==0)
 	       printf("\n");
@@ -773,7 +773,7 @@ void update_control_parameter_remote2(uint8 *buf)
 		K.k[i+16]=(float)buffer_k[i];
 #endif
 #ifdef MULTIROTOR_8
-		K.k[i+16]=((float)buffer_k[i])/10;
+		K.k[i+16]=((float)buffer_k[i])/20;
 #endif
 	}
 
@@ -785,7 +785,7 @@ void update_control_parameter_remote2(uint8 *buf)
         fprintf(fp,"%.1f,",K.k[i]);
     fclose(fp);
 
-    printf("---------------flying parameter--------------------");
+    printf("----%s-%s-----------uploading flying parameter2--------------------",__DATE__,__TIME__);
 	for(i=0;i<64;i++){
 		if((i%8)==0)
 	       printf("\n");
@@ -806,7 +806,7 @@ void update_control_parameter_remote3(uint8 *buf)
 		K.k[i+32]=(float)buffer_k[i];
 #endif
 #ifdef MULTIROTOR_8
-		K.k[i+32]=((float)buffer_k[i])/10;
+		K.k[i+32]=((float)buffer_k[i])/20;
 #endif
 	}
 
@@ -818,7 +818,7 @@ void update_control_parameter_remote3(uint8 *buf)
         fprintf(fp,"%.1f,",K.k[i]);
     fclose(fp);
 
-    printf("---------------flying parameter--------------------");
+    printf("----%s-%s-----------uploading flying parameter3--------------------",__DATE__,__TIME__);
 	for(i=0;i<64;i++){
 		if((i%8)==0)
 	       printf("\n");
@@ -839,7 +839,7 @@ void update_control_parameter_remote4(uint8 *buf)
 		K.k[i+48]=(float)buffer_k[i];
 #endif
 #ifdef MULTIROTOR_8
-		K.k[i+48]=((float)buffer_k[i])/10;
+		K.k[i+48]=((float)buffer_k[i])/20;
 #endif
 	}
 
@@ -851,7 +851,7 @@ void update_control_parameter_remote4(uint8 *buf)
         fprintf(fp,"%.1f,",K.k[i]);
     fclose(fp);
 
-    printf("---------------flying parameter--------------------");
+    printf("----%s-%s-----------uploading flying parameter4--------------------",__DATE__,__TIME__);
 	for(i=0;i<64;i++){
 		if((i%8)==0)
 	       printf("\n");
