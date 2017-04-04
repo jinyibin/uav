@@ -12,6 +12,7 @@
 #include "ComManage.h"
 #include "ProtocolImu.h"
 #include "fpga.h"
+#include <fcntl.h>
 
 
 static int running = 0;
@@ -25,6 +26,7 @@ int sensor_open()
 {
 	gps_fd = serial_open(GPS_SENSOR_COM, 115200, 0, 1);
     control_fd = serial_open(CONTROL_COM, 115200, 0, 1);
+    leddar_fd = serial_open(LEDDAR_COM, 115200, 0, 1);
 //	if (gps_fd < 0 || high_fd < 0 || control_fd < 0) {
 	if (gps_fd < 0 ) {
 
@@ -37,6 +39,16 @@ int sensor_open()
 		print_err("sensor open failed,control_fd = %d\n",  control_fd);
 		return SERIAL_CTRL_OPEN_FAILED;
 	}
+	if (leddar_fd < 0) {
+
+		print_err("sensor open failed,leddar_fd = %d\n",  leddar_fd);
+		return SERIAL_CTRL_OPEN_FAILED;
+	}
+
+	if(fcntl(leddar_fd,F_SETFL,FNDELAY) < 0)//非阻塞，覆盖前面open的属性
+	  {
+	           printf("fcntl failed\n");
+	   }
 	running = 1;
 	pthread_create(&recv_pid, NULL, sensor_data_collect, NULL);
 	return 0;
@@ -70,6 +82,7 @@ static void *sensor_data_collect()
 
 	 frame_info frame_info_gps={0,0};
 	 frame_info frame_info_ctrl={0,0};
+
 	 frame_wait_confirm frame_wait_confirm = {ctrl_frame_data,0,0};
 
 	struct timeval tv;

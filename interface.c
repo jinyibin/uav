@@ -9,6 +9,7 @@
 #include "ProtocolImu.h"
 #include "ac.h"
 #include "fpga.h"
+#include "leddar_protocol.h"
 
 
 
@@ -148,6 +149,9 @@ static void *auto_flying_execute()
 
 	flying_attitude_s *fa;
 	uint64 current_ts, timer_ts;
+	frame_info frame_info_leddar={0,0};
+	uint8 leddar_buf[1024];
+	uint8 counter=0;
 
 	while(running) {
 		counter_global++;
@@ -195,6 +199,18 @@ static void *auto_flying_execute()
 
 #ifdef MULTIROTOR_8
 
+    	if(counter==4)
+    		counter = 0;
+    	else
+    		counter++;
+
+    	if(counter==4){
+    	    if(leddar_detection_get(&frame_info_leddar,leddar_buf)==1){
+    		    frame_info_leddar.bytes_received=0;
+    		//printf("data ready %d \n",frame_info_leddar.bytes_received);
+    	    }
+    	}else if(counter==0)
+    		leddar_detection_request();
         negative();
         /*
         //for test only,run in extreme low speed

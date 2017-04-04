@@ -8,6 +8,7 @@
 #define GPS_SENSOR_COM "/dev/ttyLP1"
 #define CONTROL_COM "/dev/ttyLP3"
 #define HIGHT_SENOR_COM "/dev/ttyS3"
+#define LEDDAR_COM "dev/ttyLP2"
 
 
 #define GPS_SENSOR 0
@@ -49,6 +50,7 @@ typedef struct frame_wait_confirm
 
  int control_fd ;
  int gps_fd ;
+ int leddar_fd;
 
 int sensor_open();
 void sensor_close();

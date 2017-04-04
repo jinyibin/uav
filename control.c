@@ -15,6 +15,7 @@
 #include "ComManage.h"
 #include "ProtocolImu.h"
 #include "PressureSensor.h"
+#include "leddar_protocol.h"
 
 static int system_status = 0;
 static int waypoint_is_ready = 0;
@@ -442,6 +443,9 @@ void flying_status_return(int transmit_data)
 	uint8  buf[256];
 	uint16 crc_value;
 	int pressure;
+	leddar_detection *leddar_data;
+
+	leddar_data=get_leddar_detection_data();
 
 	buf[0] = CTRL_FRAME_START1;
 	buf[1] = CTRL_FRAME_START2;
@@ -478,8 +482,9 @@ void flying_status_return(int transmit_data)
 	*((float *)(buf+99))=fa->vy;
 	*((float *)(buf+103))=fa->vz;
 
-    sonar_data=get_sonar_data();
-	*(uint32*)(buf+107)  = sonar_data;
+    //sonar_data=get_sonar_data();
+	//*(uint32*)(buf+107)  = sonar_data;
+	*(uint32*)(buf+107)=leddar_data[4].distance;
 	//*(uint32*)(buf+107)  = (uint32)sonar_kf;
 
 	buf[111] = gepoint.id & 0xFF ;
@@ -514,6 +519,7 @@ void flying_status_return(int transmit_data)
     }
 	*(uint16*)(buf+4) = 0xAF;
 	memcpy(buf+142,rc_data,14);
+	*(uint16*)(buf+142)= leddar_data[3].distance;
 	pressure = get_altimeter();
 	*(uint16*)(buf+154)= pressure>>16;
 	*(uint16*)(buf+156)= pressure&0xffff;
@@ -636,6 +642,7 @@ int poweron_self_check()
     control_parameter_init();
 
     servo_test_enable=0;
+    //leddar_detection_request();
 
 	while (1) {
 		if(get_system_status() < SYS_PREPARE_STEERING_TEST){
