@@ -740,7 +740,7 @@ void update_control_parameter_remote1(uint8 *buf)
 		K.k[i]=(float)buffer_k[i];
 #endif
 #ifdef MULTIROTOR_8
-		K.k[i]=((float)buffer_k[i])/20;
+		K.k[i]=((float)buffer_k[i])/100;
 #endif
 	}
 
@@ -773,7 +773,7 @@ void update_control_parameter_remote2(uint8 *buf)
 		K.k[i+16]=(float)buffer_k[i];
 #endif
 #ifdef MULTIROTOR_8
-		K.k[i+16]=((float)buffer_k[i])/20;
+		K.k[i+16]=((float)buffer_k[i])/100;
 #endif
 	}
 
@@ -806,7 +806,7 @@ void update_control_parameter_remote3(uint8 *buf)
 		K.k[i+32]=(float)buffer_k[i];
 #endif
 #ifdef MULTIROTOR_8
-		K.k[i+32]=((float)buffer_k[i])/20;
+		K.k[i+32]=((float)buffer_k[i])/100;
 #endif
 	}
 
@@ -839,7 +839,7 @@ void update_control_parameter_remote4(uint8 *buf)
 		K.k[i+48]=(float)buffer_k[i];
 #endif
 #ifdef MULTIROTOR_8
-		K.k[i+48]=((float)buffer_k[i])/20;
+		K.k[i+48]=((float)buffer_k[i])/100;
 #endif
 	}
 
