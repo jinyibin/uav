@@ -733,6 +733,7 @@ void update_control_parameter_remote1(uint8 *buf)
     FILE *fp;
     int i;
     int16 buffer_k[16];
+    flying_attitude_s *p;
 	memcpy(buffer_k, buf, 32);
 
 	for(i=0;i<16;i++){
@@ -752,7 +753,9 @@ void update_control_parameter_remote1(uint8 *buf)
         fprintf(fp,"%.1f,",K.k[i]);
     fclose(fp);
 
-    printf("----%s-%s-----------uploading flying parameter1--------------------",__DATE__,__TIME__);
+    p=get_flying_attitude();
+
+    printf("----%d-%d-%d,%d:%d:%d-----------uploading flying parameter1--------------------",p->year,p->month,p->day,p->hour+8,p->min,p->sec);
 	for(i=0;i<64;i++){
 		if((i%8)==0)
 	       printf("\n");
@@ -766,6 +769,8 @@ void update_control_parameter_remote2(uint8 *buf)
     FILE *fp;
     int i;
     int16 buffer_k[16];
+
+    flying_attitude_s *p;
 	memcpy(buffer_k, buf, 32);
 
 	for(i=0;i<16;i++){
@@ -784,8 +789,8 @@ void update_control_parameter_remote2(uint8 *buf)
     for(i=0;i<64;i++)
         fprintf(fp,"%.1f,",K.k[i]);
     fclose(fp);
-
-    printf("----%s-%s-----------uploading flying parameter2--------------------",__DATE__,__TIME__);
+    p=get_flying_attitude();
+    printf("----%d-%d-%d,%d:%d:%d-----------uploading flying parameter2--------------------",p->year,p->month,p->day,p->hour+8,p->min,p->sec);
 	for(i=0;i<64;i++){
 		if((i%8)==0)
 	       printf("\n");
@@ -799,6 +804,8 @@ void update_control_parameter_remote3(uint8 *buf)
     FILE *fp;
     int i;
     int16 buffer_k[16];
+    flying_attitude_s *p;
+
 	memcpy(buffer_k, buf, 32);
 
 	for(i=0;i<16;i++){
@@ -817,8 +824,8 @@ void update_control_parameter_remote3(uint8 *buf)
     for(i=0;i<64;i++)
         fprintf(fp,"%.1f,",K.k[i]);
     fclose(fp);
-
-    printf("----%s-%s-----------uploading flying parameter3--------------------",__DATE__,__TIME__);
+    p=get_flying_attitude();
+    printf("----%d-%d-%d,%d:%d:%d-----------uploading flying parameter3--------------------",p->year,p->month,p->day,p->hour+8,p->min,p->sec);
 	for(i=0;i<64;i++){
 		if((i%8)==0)
 	       printf("\n");
@@ -832,6 +839,8 @@ void update_control_parameter_remote4(uint8 *buf)
     FILE *fp;
     int i;
     int16 buffer_k[16];
+    flying_attitude_s *p;
+
 	memcpy(buffer_k, buf, 32);
 
 	for(i=0;i<16;i++){
@@ -850,8 +859,8 @@ void update_control_parameter_remote4(uint8 *buf)
     for(i=0;i<64;i++)
         fprintf(fp,"%.1f,",K.k[i]);
     fclose(fp);
-
-    printf("----%s-%s-----------uploading flying parameter4--------------------",__DATE__,__TIME__);
+    p=get_flying_attitude();
+    printf("----%d-%d-%d,%d:%d:%d-----------uploading flying parameter4--------------------",p->year,p->month,p->day,p->hour+8,p->min,p->sec);
 	for(i=0;i<64;i++){
 		if((i%8)==0)
 	       printf("\n");
