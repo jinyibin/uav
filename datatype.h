@@ -24,6 +24,7 @@ typedef unsigned long long uint64;
 //#define HELI
 #define MULTIROTOR_8
 //#define MULTIROTOR_6
+//#define ATTITUDE_POSITION_SEPERATE
 
 
 uint32 command;

@@ -152,7 +152,9 @@ static void *auto_flying_execute()
 	frame_info frame_info_leddar={0,0};
 	uint8 leddar_buf[1024];
 	uint8 counter=0;
-
+#ifdef ATTITUDE_POSITION_SEPERATE
+	uint8 control_cnt=0;
+#endif
 	while(running) {
 		counter_global++;
 
@@ -211,7 +213,21 @@ static void *auto_flying_execute()
     	    }
     	}else if(counter==0)
     		leddar_detection_request();
+#ifndef  ATTITUDE_POSITION_SEPERATE
         negative();
+#endif
+
+#ifdef ATTITUDE_POSITION_SEPERATE
+    	if(control_cnt==4)
+    		control_cnt = 0;
+    	else
+    		control_cnt++;
+    	if(control_cnt==0)
+    		position_control();
+    	attitude_control();
+
+
+#endif
         /*
         //for test only,run in extreme low speed
         if(rc_data[2]<1170){//read remote pitch data

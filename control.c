@@ -750,7 +750,7 @@ void update_control_parameter_remote1(uint8 *buf)
       return ;
     }
     for(i=0;i<64;i++)
-        fprintf(fp,"%.1f,",K.k[i]);
+        fprintf(fp,"%f,",K.k[i]);
     fclose(fp);
 
     p=get_flying_attitude();
@@ -759,7 +759,9 @@ void update_control_parameter_remote1(uint8 *buf)
 	for(i=0;i<64;i++){
 		if((i%8)==0)
 	       printf("\n");
-    	printf("%.1f,",K.k[i]);
+		if((i%16)==0)
+			printf("-----------------------\n");
+    	printf("%.2f,",K.k[i]);
 	}
 	printf("\n");
 }
@@ -787,14 +789,16 @@ void update_control_parameter_remote2(uint8 *buf)
       return ;
     }
     for(i=0;i<64;i++)
-        fprintf(fp,"%.1f,",K.k[i]);
+        fprintf(fp,"%f,",K.k[i]);
     fclose(fp);
     p=get_flying_attitude();
     printf("----%d-%d-%d,%d:%d:%d-----------uploading flying parameter2--------------------",p->year,p->month,p->day,p->hour+8,p->min,p->sec);
 	for(i=0;i<64;i++){
 		if((i%8)==0)
 	       printf("\n");
-    	printf("%.1f,",K.k[i]);
+		if((i%16)==0)
+			printf("-----------------------\n");
+    	printf("%.2f,",K.k[i]);
 	}
 	printf("\n");
 }
@@ -822,14 +826,16 @@ void update_control_parameter_remote3(uint8 *buf)
       return ;
     }
     for(i=0;i<64;i++)
-        fprintf(fp,"%.1f,",K.k[i]);
+        fprintf(fp,"%f,",K.k[i]);
     fclose(fp);
     p=get_flying_attitude();
     printf("----%d-%d-%d,%d:%d:%d-----------uploading flying parameter3--------------------",p->year,p->month,p->day,p->hour+8,p->min,p->sec);
 	for(i=0;i<64;i++){
 		if((i%8)==0)
 	       printf("\n");
-    	printf("%.1f,",K.k[i]);
+		if((i%16)==0)
+			printf("-----------------------\n");
+    	printf("%.2f,",K.k[i]);
 	}
 	printf("\n");
 }
@@ -857,14 +863,16 @@ void update_control_parameter_remote4(uint8 *buf)
       return ;
     }
     for(i=0;i<64;i++)
-        fprintf(fp,"%.1f,",K.k[i]);
+        fprintf(fp,"%f,",K.k[i]);
     fclose(fp);
     p=get_flying_attitude();
     printf("----%d-%d-%d,%d:%d:%d-----------uploading flying parameter4--------------------",p->year,p->month,p->day,p->hour+8,p->min,p->sec);
 	for(i=0;i<64;i++){
 		if((i%8)==0)
 	       printf("\n");
-    	printf("%.1f,",K.k[i]);
+		if((i%16)==0)
+			printf("-----------------------\n");
+    	printf("%.2f,",K.k[i]);
 	}
 	printf("\n");
 }
@@ -995,7 +1003,7 @@ void data_export()
 	for(i=0;i<32;i++){
 		if((i%8)==0)
 	       printf("\n");
-    	printf("%d,",K.k[i]);
+    	printf("%f,",K.k[i]);
 	}
 	printf("\n");
 
