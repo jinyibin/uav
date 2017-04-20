@@ -265,7 +265,7 @@ int write_pwm_data(uint16 *data)
 		//print_debug("%4x --- %4x \n",p[i],d[i+12]);
        if(p[i] != d[i+16]){
 #ifdef debug
-    	   print_err("pwm write error \n");
+    	   print_err("pwm write error :%d\n",(int)((i-1)/2));
 #else
     	   fault_status_return(PWM_WRITE_FAILED);
 #endif

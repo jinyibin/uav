@@ -444,6 +444,8 @@ void flying_status_return(int transmit_data)
 	uint16 crc_value;
 	int pressure;
 	leddar_detection *leddar_data;
+	uint64 start_time, stop_time;
+	//uint16 test1,test2;
 
 	leddar_data=get_leddar_detection_data();
 
@@ -490,6 +492,7 @@ void flying_status_return(int transmit_data)
 	buf[111] = gepoint.id & 0xFF ;
 	buf[112] = gepoint.id >> 8 ;// next waypoint
 
+	//start_time = get_current_time();
 	read_rc_data(rc_data);
     if(get_flying_status() == AIRCRAFT_MANUAL_MODE){
        memcpy(buf+113,rc_data,14);
@@ -502,6 +505,9 @@ void flying_status_return(int transmit_data)
     buf[135] = 0; // gps status
     buf[136] = 0; // imu status
     buf[137] = 0; // AP status :cpu1 or cpu2
+
+
+
     working_status.input_voltage = get_input_voltage();
     working_status.engine_voltage = get_monitor_voltage();
     working_status.cpu_temprature = get_cpu_temperature();
@@ -509,27 +515,40 @@ void flying_status_return(int transmit_data)
     buf[139] = working_status.engine_voltage&0xFF;//UAV power
     buf[140] = working_status.cpu_temprature/1000;
     buf[141] = 0;
-
+    //stop_time = get_current_time();
+    //test1 = stop_time - start_time;
     if(transmit_data){
+
 	    crc_value=crc_checksum16(buf, 142);
 	    buf[142] = crc_value&0xFF;
 	    buf[143] = crc_value>>8;
 	    buf[144] = CTRL_FRAME_END;
 	    control_cmd_send(buf, 145);
+
+    	//printf("3 %u\n",(uint32)(stop_time-start_time));
     }
 	*(uint16*)(buf+4) = 0xAF;
+
 	memcpy(buf+142,rc_data,14);
 	*(uint16*)(buf+142)= leddar_data[3].distance;
-	pressure = get_altimeter();
-	*(uint16*)(buf+154)= pressure>>16;
-	*(uint16*)(buf+156)= pressure&0xffff;
+
+	//pressure = get_altimeter();
+
+	//*(uint16*)(buf+154)= pressure>>16;
+	//*(uint16*)(buf+156)= pressure&0xffff;
+	//*(uint16*)(buf+154)= test1;
+	//*(uint16*)(buf+156)= stop_time-start_time;;
 	*(uint16*)(buf+158)=time_estimation.data_return;
 	*(uint16*)(buf+160)=time_estimation.algorithm;
 	crc_value=crc_checksum16(buf, 172);
 	buf[172] = crc_value&0xFF;
 	buf[173] = crc_value>>8;
 	buf[174] = CTRL_FRAME_END;
+
+
 	fwrite(buf,175,1,fp_fly_status);
+
+
 }
 
 /*

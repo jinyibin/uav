@@ -101,7 +101,7 @@ void update_joystick_data(uint16 *data)
 static pthread_t execute_pid;
 static int running = 1;
 //static pthread_cond_t timer_cond;
-#define TIMER_CYCLE 20000 //20MS
+//#define TIMER_CYCLE 20000 //20MS
 /*
 static void *auto_flying_execute()
 {
@@ -201,12 +201,12 @@ static void *auto_flying_execute()
 
 #ifdef MULTIROTOR_8
 
-    	if(counter==10)
+    	if(counter==(uint8)(CONTROL_FREQUENCY/5))
     		counter = 0;
     	else
     		counter++;
 
-    	if(counter==10){
+    	if(counter==(uint8)(CONTROL_FREQUENCY/5)){
     	    if(leddar_detection_get(&frame_info_leddar,leddar_buf)==1){
     		    frame_info_leddar.bytes_received=0;
     		//printf("data ready %d \n",frame_info_leddar.bytes_received);
@@ -218,7 +218,7 @@ static void *auto_flying_execute()
 #endif
 
 #ifdef ATTITUDE_POSITION_SEPERATE
-    	if(control_cnt==4)
+    	if(control_cnt==8)
     		control_cnt = 0;
     	else
     		control_cnt++;

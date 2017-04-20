@@ -4,11 +4,20 @@
 #include "datatype.h"
 #include "ComManage.h"
 #include "ProtocolGround.h"
-
+/*
 #define CONTROL_DUTY 20	//20ms
-#define CONTROL_FREQUENCY 50	//20ms
+#define CONTROL_FREQUENCY 50	//50HZ 20ms
 #define CONTROL_PERIOD_US 20000	//20000us
 #define CONTROL_PERIOD_MS 20	//20ms
+#define TIMER_CYCLE 20000 //20MS
+*/
+
+#define CONTROL_FREQUENCY 100	//10ms
+#define CONTROL_PERIOD_US 10000	//10000us
+#define CONTROL_PERIOD_MS 10	//10ms
+
+#define TIMER_CYCLE 10000 //10MS
+
 
 /*  err tag */
 #define INVALID_CMD 30

@@ -24,7 +24,7 @@ static void *sensor_data_collect();
 
 int sensor_open()
 {
-	gps_fd = serial_open(GPS_SENSOR_COM, 115200, 0, 1);
+	gps_fd = serial_open(GPS_SENSOR_COM, 230400, 0, 1);
     control_fd = serial_open(CONTROL_COM, 115200, 0, 1);
     leddar_fd = serial_open(LEDDAR_COM, 115200, 0, 1);
 //	if (gps_fd < 0 || high_fd < 0 || control_fd < 0) {

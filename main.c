@@ -77,14 +77,17 @@ int main( int argc,char *argv[])
 
 		//save log file every 1 minute
 		 counter++;
+
 		if(counter==(CONTROL_FREQUENCY*60*1)){
 			counter=0;
+
 			fclose(fp_fly_status);
 			memset(log_file_name,sizeof(log_file_name),0);
 			generate_file_name(log_file_name);
 		    if((fp_fly_status=fopen(log_file_name,"wb"))==NULL){
 		      printf("can not open file:%s\n",log_file_name);
 		    }
+
 		}
 
 
