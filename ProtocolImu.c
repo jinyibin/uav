@@ -14,6 +14,7 @@
 #include "fpga.h"
 #include "interface.h"
 
+#ifdef USE_SBG_IG500
 static flying_attitude_s flying_attitude;
 static uint64 fa_timestamp = 0;
 
@@ -97,7 +98,7 @@ void set_flying_attitude(uint8 *buf)
     gfstate.h[1]      = p->heading;
 	fa_timestamp = get_current_time();
 }
-
+#endif
 /* serial_data_recv_gps()
  * try to receive a frame from the serial port for gps
  * frame format : FF 02 cmd(90) length(2bytes) data crc(2bytes) 03
@@ -113,7 +114,7 @@ unsigned int serial_data_recv_gps(frame_info *frame_info,unsigned char *buf)
 	  unsigned int i=0;
 	  unsigned int frame_head_found=0;
 	  unsigned int frame_crc;
-	  unsigned int m=0;
+
 
   	// make sure buf never will be overflowed
     nread=read(gps_fd,buf+frame_info->bytes_received,BUF_SIZE_GPS-frame_info->bytes_received);

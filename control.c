@@ -16,6 +16,7 @@
 #include "ProtocolImu.h"
 #include "PressureSensor.h"
 #include "leddar_protocol.h"
+#include "sbg_ellipse.h"
 
 static int system_status = 0;
 static int waypoint_is_ready = 0;
@@ -31,8 +32,6 @@ static waypoint_list_s *waypoint_list_current = NULL;
 
 static uint16 flying_status = 0;
 
-
-extern int sonar_kf;
 
 uint64 get_current_time()
 {
@@ -444,7 +443,7 @@ void flying_status_return(int transmit_data)
 	uint16 crc_value;
 	int pressure;
 	leddar_detection *leddar_data;
-	uint64 start_time, stop_time;
+	//uint64 start_time, stop_time;
 	//uint16 test1,test2;
 
 	leddar_data=get_leddar_detection_data();
@@ -627,9 +626,15 @@ int poweron_self_check()
 	    }
 	    print_debug("Flying attitude sensor is active\n");
         p=get_flying_attitude();
-        //printf("system beijing time %d-%d-%d,%d:%d:%d\n",p->year,p->month,p->day,p->hour+8,p->min,p->sec);
+#ifdef USE_SBG_ELLIPSE
+        sprintf(set_system_time,"date -s \"%d-%d-%d %d:%d:%d\"",p->year,p->month,p->day,p->hour+8,p->min,p->sec);
+        //printf("run command :%s,%d,%d,%d\n",set_system_time,p->year,p->month,p->day);
+#else
+#ifdef USE_SBG_IG500
         sprintf(set_system_time,"date -s \"%d-%d-%d %d:%d:%d\"",p->year+2000,p->month,p->day,p->hour+8,p->min,p->sec);
-        //printf("%s\n",set_system_time);
+#endif
+#endif
+
         system(set_system_time);
 
 	}else if(command==1){
@@ -641,6 +646,7 @@ int poweron_self_check()
 
 		set_flying_status(AIRCRAFT_MANUAL_MODE);
 		set_control_register(CTRL_REG_MASK_MANUAL);
+		set_servo_pwm_period(CONTROL_PERIOD_US);
 		set_system_status(SYS_PREPARE_SETTING);
 		printf("UAV is now working in data capturing mode\n");
 	}else{
@@ -659,7 +665,7 @@ int poweron_self_check()
     }
     heli_configuration_init();
     control_parameter_init();
-
+    set_servo_pwm_period(CONTROL_PERIOD_US);
     servo_test_enable=0;
     //leddar_detection_request();
 

@@ -113,11 +113,21 @@ typedef struct flying_attitude_s {
 	float az;
 	uint32 g_time;
 	uint32 status;
+#ifdef USE_SBG_ELLIPSE
+	float vn;
+	float ve;
+	float vd;
+	float b_h;
+#else
+#ifdef USE_SBG_IG500
 	int vn;
 	int ve;
 	int vd;
-	int heading;
 	int b_h;
+#endif
+#endif
+	int heading;
+
 	double lat;
 	double Long;
 	double g_h;
@@ -127,7 +137,7 @@ typedef struct flying_attitude_s {
 	float accuracy_atti;
 	float accuracy_pos;
 	float accuracy_vel;
-	uint8  year;
+	uint16  year;
 	uint8  month;
 	uint8  day;
 	uint8  hour;

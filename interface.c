@@ -10,6 +10,7 @@
 #include "ac.h"
 #include "fpga.h"
 #include "leddar_protocol.h"
+#include "sbg_ellipse.h"
 
 
 

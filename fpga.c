@@ -217,7 +217,36 @@ int write_pwm_data(uint16 *data)
 	uint16 *p;
 	uint16 *d;
 	uint8 i;
+	uint8 error=0;
 
+	spi_tr.len = 32;
+	p=(uint16*)spi_tx;
+	d=(uint16*)spi_rx;
+	// write data
+     *p      = SPI_WRITE_PWM_CH1;
+     *(p+1)  = data[0];
+     *(p+2)  = SPI_WRITE_PWM_CH2;
+     *(p+3)  = data[1];
+     *(p+4)  = SPI_WRITE_PWM_CH3;
+     *(p+5)  = data[2];
+     *(p+6)  = SPI_WRITE_PWM_CH4;
+     *(p+7)  = data[3];
+     *(p+8)  = SPI_WRITE_PWM_CH5;
+     *(p+9)  = data[4];
+     *(p+10) = SPI_WRITE_PWM_CH6;
+     *(p+11) = data[5];
+     *(p+12) = SPI_WRITE_PWM_CH7;
+     *(p+13) = data[6];
+     *(p+14) = SPI_WRITE_PWM_CH8;
+     *(p+15) = data[7];
+
+ 	ret = ioctl(spi_fd, SPI_IOC_MESSAGE(1), &spi_tr);
+	if (ret < 1){
+		print_err("can't send pwm data\n");
+	    return -1;
+	}
+
+	/*
 	spi_tr.len = 64;
 	p=(uint16*)spi_tx;
 	d=(uint16*)spi_rx;
@@ -265,13 +294,44 @@ int write_pwm_data(uint16 *data)
 		//print_debug("%4x --- %4x \n",p[i],d[i+12]);
        if(p[i] != d[i+16]){
 #ifdef debug
-    	   print_err("pwm write error :%d\n",(int)((i-1)/2));
+    	   print_err("pwm write error :%d  %d--%d\n",(int)((i-1)/2),p[i],d[i+16]);
 #else
     	   fault_status_return(PWM_WRITE_FAILED);
 #endif
-    	   return PWM_WRITE_FAILED;
+           error = 1;
        }
 	}
+
+	if(error){
+	     *(p+0) = SPI_READ_PWM_CH1;
+	     *(p+1) = 0;
+	     *(p+2) = SPI_READ_PWM_CH2;
+	     *(p+3) = 0;
+	     *(p+4) = SPI_READ_PWM_CH3;
+	     *(p+5) = 0;
+	     *(p+6) = SPI_READ_PWM_CH4;
+	     *(p+7) = 0;
+	     *(p+8) = SPI_READ_PWM_CH5;
+	     *(p+9) = 0;
+	     *(p+10) = SPI_READ_PWM_CH6;
+	     *(p+11) = 0;
+	     *(p+12) = SPI_READ_PWM_CH7;
+	     *(p+13) = 0;
+	     *(p+14) = SPI_READ_PWM_CH8;
+	     *(p+15) = 0;
+	     for(i=0;i<16;i++){
+	    	*(d+i) = 0;
+	     }
+
+	     ret = ioctl(spi_fd, SPI_IOC_MESSAGE(1), &spi_tr);
+	     if (ret < 1){
+	     		print_err("can't send pwm data\n");
+	     	    return -1;
+	     }
+	     printf("%d,%d,%d,%d,%d,%d,%d,%d\n",d[1],d[3],d[5],d[7],d[9],d[11],d[13],d[15]);
+		 return PWM_WRITE_FAILED;
+	}
+	*/
 	// check success ,write pwm data load command
     ret = spi_write_one_word_no_check(SPI_WRITE_PWM_LOAD,0);
     return ret;
@@ -401,5 +461,8 @@ int reset_control_register(int mask_bit)
 }
 void set_servo_pwm_period(uint16 data)
 {
+	printf("set pwm period as :%d us \n",data);
 	spi_write_one_word(SPI_WRITE_PWM_PERIOD,data);
+	spi_write_one_word(SPI_WRITE_PWM_CH7_PERIOD,data);
+	spi_write_one_word(SPI_WRITE_PWM_CH8_PERIOD,data);
 }

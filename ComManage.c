@@ -13,6 +13,7 @@
 #include "ProtocolImu.h"
 #include "fpga.h"
 #include <fcntl.h>
+#include "sbg_ellipse.h"
 
 
 static int running = 0;
@@ -24,7 +25,12 @@ static void *sensor_data_collect();
 
 int sensor_open()
 {
+#ifdef USE_SBG_ELLIPSE
+	gps_fd = serial_open(GPS_SENSOR_COM, 921600, 0, 1);
+#endif
+#ifdef USE_SBG_IG500
 	gps_fd = serial_open(GPS_SENSOR_COM, 230400, 0, 1);
+#endif
     control_fd = serial_open(CONTROL_COM, 115200, 0, 1);
     leddar_fd = serial_open(LEDDAR_COM, 115200, 0, 1);
 //	if (gps_fd < 0 || high_fd < 0 || control_fd < 0) {
@@ -96,15 +102,29 @@ static void *sensor_data_collect()
              tv.tv_usec=80000; //80 ms
 		     if (select(1 + maxfd, &rfds, NULL, NULL, &tv) > 0) {
 				if (FD_ISSET(gps_fd, &rfds)) {
-					data_len=serial_data_recv_gps(&frame_info_gps,buf_gps);
+#ifdef USE_SBG_ELLIPSE
+DATA_RECV:  		data_len=serial_data_recv_ellipse(&frame_info_gps,buf_gps);
+#endif
+#ifdef USE_SBG_IG500
+            		data_len=serial_data_recv_gps(&frame_info_gps,buf_gps);
+#endif
                     if(data_len > 0){
                         //print_debug("%4d ,frame time: %d,length : %d\n",i++, *(unsigned int *)(buf_gps+41),data_len);
+#ifdef USE_SBG_ELLIPSE
+                    	ellipse_data_parse(buf_gps, &frame_info_gps);
+#endif
+#ifdef USE_SBG_IG500
                     	gps_data_parse(buf_gps, &frame_info_gps);
+#endif
                     	if(frame_info_gps.bytes_received > frame_info_gps.frame_size){
                     	     memmove(buf_gps,buf_gps+frame_info_gps.frame_size,frame_info_gps.bytes_received-frame_info_gps.frame_size);
                     	}
                     	frame_info_gps.frame_size=0;
                     	frame_info_gps.bytes_received -= data_len;
+#ifdef USE_SBG_ELLIPSE
+                    	if(frame_info_gps.bytes_received >  ELLIPSE_FRAME_MINIMUM_LEN)
+                    		goto DATA_RECV;
+#endif
 
                     }
 
