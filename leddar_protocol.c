@@ -167,5 +167,5 @@ unsigned int crc16_calc_leddar (unsigned char *crc_buf, unsigned char crc_leni)
 
 leddar_detection *get_leddar_detection_data(){
 
-	return &leddar_detect;
+	return leddar_detect;
 }

@@ -103,6 +103,7 @@ int waypoint_check();
 
 void update_setting_status( aircraft_preparing_status_s  *aps);
 void update_joystick_data(uint16 *data);
+void autopilot_control();
 
 #endif
 

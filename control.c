@@ -492,7 +492,7 @@ void flying_status_return(int transmit_data)
 	buf[112] = gepoint.id >> 8 ;// next waypoint
 
 	//start_time = get_current_time();
-	read_rc_data(rc_data);
+
     if(get_flying_status() == AIRCRAFT_MANUAL_MODE){
        memcpy(buf+113,rc_data,14);
     }else
