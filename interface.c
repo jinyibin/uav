@@ -154,7 +154,7 @@ static void *auto_flying_execute()
 	uint8 leddar_buf[1024];
 	uint8 counter=0;
 #ifdef ATTITUDE_POSITION_SEPERATE
-	uint8 control_cnt=0;
+	uint32 control_cnt=0;
 #endif
 	while(running) {
 		counter_global++;
@@ -219,7 +219,7 @@ static void *auto_flying_execute()
 #endif
 
 #ifdef ATTITUDE_POSITION_SEPERATE
-    	if(control_cnt==8)
+    	if(control_cnt==(uint32)K.k[36])
     		control_cnt = 0;
     	else
     		control_cnt++;
