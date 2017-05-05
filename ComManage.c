@@ -33,6 +33,8 @@ int sensor_open()
 #endif
     control_fd = serial_open(CONTROL_COM, 115200, 0, 1);
     leddar_fd = serial_open(LEDDAR_COM, 115200, 0, 1);
+	running = 1;
+	pthread_create(&recv_pid, NULL, sensor_data_collect, NULL);
 //	if (gps_fd < 0 || high_fd < 0 || control_fd < 0) {
 	if (gps_fd < 0 ) {
 
@@ -55,8 +57,7 @@ int sensor_open()
 	  {
 	           printf("fcntl failed\n");
 	   }
-	running = 1;
-	pthread_create(&recv_pid, NULL, sensor_data_collect, NULL);
+
 	return 0;
 }
 
