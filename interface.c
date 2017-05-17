@@ -13,7 +13,8 @@
 #include "sbg_ellipse.h"
 
 
-
+static uint8 leddar_counter=0;
+static uint8 loop_control_cnt=0;
 
 /* Forward +1 -1*/
 void get_flyling_line_point(int forward)
@@ -32,6 +33,7 @@ void get_flyling_line_point(int forward)
 			//memcpy(&gspoint, &wp->waypoint, sizeof(gspoint));
 			//memcpy(&gepoint, &wp->waypoint, sizeof(gepoint));
 			take_off_heading = fa->yaw;
+			//printf("take off heading :%f \n",take_off_heading);
 
 			//set current position as takeoff position
             gspoint.id=0;
@@ -279,8 +281,10 @@ void autopilot_control(){
 
 		frame_info frame_info_leddar={0,0};
 		uint8 leddar_buf[1024];
-		uint8 counter=0;
-		uint8 control_cnt=0;
+
+		uint8 out_loop_fre;
+
+		out_loop_fre = (uint8)(K.k[36]);
 
 	#ifdef HELI
 	        negative();
@@ -288,25 +292,27 @@ void autopilot_control(){
 
 	#ifdef MULTIROTOR_8
 
-	    	if(counter==(uint8)(CONTROL_FREQUENCY/5))
-	    		counter = 0;
+	    	if(leddar_counter==(uint8)(CONTROL_FREQUENCY/5))
+	    		leddar_counter = 0;
 	    	else
-	    		counter++;
+	    		leddar_counter++;
 
-	    	if(counter==(uint8)(CONTROL_FREQUENCY/5)){
+	    	if(leddar_counter==(uint8)(CONTROL_FREQUENCY/5)){
 	    	    if(leddar_detection_get(&frame_info_leddar,leddar_buf)==1){
 	    		    frame_info_leddar.bytes_received=0;
 	    		//printf("data ready %d \n",frame_info_leddar.bytes_received);
 	    	    }
-	    	}else if(counter==0)
+	    	}else if(leddar_counter==0)
 	    		leddar_detection_request();
 
-	    	if(control_cnt==8)
-	    		control_cnt = 0;
+	    	if(loop_control_cnt==out_loop_fre)
+	    		loop_control_cnt = 0;
 	    	else
-	    		control_cnt++;
-	    	if(control_cnt==0)
+	    		loop_control_cnt++;
+	    	if(loop_control_cnt==0){
 	    		position_control();
+	    		//printf("out loop :%d \n",out_loop_fre);
+	    	}
 	    	attitude_control();
 	#endif
 

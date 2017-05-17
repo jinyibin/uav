@@ -105,7 +105,7 @@ int main( int argc,char *argv[])
 		}else if(time_estimation.algorithm < CONTROL_PERIOD_US){
 			// if auto pilot control algorithm takes too much time ,then do not save data and download to the ground
 			usleep(CONTROL_PERIOD_US-time_estimation.algorithm);
-			printf("algorithm takes %d us\n",time_estimation.algorithm);
+			//printf("algorithm takes %d us\n",time_estimation.algorithm);
 		}else
 			// auto pilot control algorithm is running over time
 			print_err("algorithm cost too much time\n");

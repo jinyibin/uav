@@ -12,12 +12,21 @@
 #define TIMER_CYCLE 20000 //20MS
 */
 
+#ifdef USE_SBG_IG500
 #define CONTROL_FREQUENCY 100	//10ms
 #define CONTROL_PERIOD_US 10000	//10000us
 #define CONTROL_PERIOD_MS 10	//10ms
 
 #define TIMER_CYCLE 10000 //10MS
+#endif
 
+#ifdef USE_SBG_ELLIPSE
+#define CONTROL_FREQUENCY 200	//200hz
+#define CONTROL_PERIOD_US 5000	//5000us
+#define CONTROL_PERIOD_MS 5	//5ms
+
+#define TIMER_CYCLE 5000 //5MS
+#endif
 
 /*  err tag */
 #define INVALID_CMD 30

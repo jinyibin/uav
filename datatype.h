@@ -25,8 +25,8 @@ typedef unsigned long long uint64;
 #define MULTIROTOR_8
 //#define MULTIROTOR_6
 #define ATTITUDE_POSITION_SEPERATE
-//#define USE_SBG_ELLIPSE
-#define USE_SBG_IG500
+#define USE_SBG_ELLIPSE
+//#define USE_SBG_IG500
 
 
 uint32 command;
