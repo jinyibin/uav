@@ -204,12 +204,12 @@ static void *auto_flying_execute()
 
 #ifdef MULTIROTOR_8
 
-    	if(counter==(uint8)(CONTROL_FREQUENCY/5))
+    	if(counter==(uint8)(CONTROL_FREQUENCY/10))
     		counter = 0;
     	else
     		counter++;
 
-    	if(counter==(uint8)(CONTROL_FREQUENCY/5)){
+    	if(counter==((uint8)(CONTROL_FREQUENCY/10)-1)){
     	    if(leddar_detection_get(&frame_info_leddar,leddar_buf)==1){
     		    frame_info_leddar.bytes_received=0;
     		//printf("data ready %d \n",frame_info_leddar.bytes_received);

@@ -14,7 +14,7 @@
 
 #include "leddar_protocol.h"
 #include "ComManage.h"
-
+#include "control.h"
 static leddar_detection leddar_detect[8];
 
 /**
@@ -59,6 +59,9 @@ void leddar_parse_detection (leddar_detection *leddar_data, uint8 data_length,ui
 												 (rev_buf[i + 3] << 8));
 		//printf("distance : %d, amp:%d \n",leddar_data[segment_id].distance,leddar_data[segment_id].amplitude);
 		leddar_data[segment_id].flag      = rev_buf[i + 4];
+		leddar_data[segment_id].velocity    = (leddar_data[segment_id].distance-leddar_data[segment_id].ex_distance)/HEIGHT_REFRESH_RATE;
+		leddar_data[segment_id].ex_distance = leddar_data[segment_id].distance;
+
 	}
 }
 

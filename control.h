@@ -26,6 +26,7 @@
 #define CONTROL_PERIOD_MS 5	//5ms
 
 #define TIMER_CYCLE 5000 //5MS
+#define HEIGHT_REFRESH_RATE  0.1  //s
 #endif
 
 /*  err tag */

@@ -481,8 +481,8 @@ void flying_status_return(int transmit_data)
 	*((double *)(buf+87))=fa->g_h;
 	*((float *)(buf+95))=gfstate.v_xyz[0];
 	*((float *)(buf+99))=gfstate.v_xyz[1];
-	*((float *)(buf+103))=gfstate.v_xyz[2];
-
+	//*((float *)(buf+103))=gfstate.v_xyz[2];
+	*((float *)(buf+103))=leddar_data[4].velocity;
     //sonar_data=get_sonar_data();
 	//*(uint32*)(buf+107)  = sonar_data;
 	*(uint32*)(buf+107)=leddar_data[4].distance;

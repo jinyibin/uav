@@ -33,6 +33,8 @@ typedef struct leddar_detection
 	unsigned char seg;           /* 扇区号 */
 	uint16  distance;      /* 距离 */
 	unsigned int  amplitude;     /* 振幅 */
+	float  velocity;
+	uint16 ex_distance;
 
 }leddar_detection;
 
